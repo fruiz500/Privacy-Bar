@@ -50,9 +50,9 @@ The official, signed, and supported version of Privacy Bar is available on the C
 
 ## 🌐 Related Projects
 Privacy Bar is part of a broader privacy ecosystem designed for cross-compatibility. Open sources also available on GitHub:
-* **PassLok:** The foundation for secure, easy-to-use encryption.
-* **KyberLock:** Dedicated post-quantum implementation.
-* **SynthPass:** The original password synthesis logic.
+* **[PassLok:](https://github.com/fruiz500/PassLok-Privacy)** The foundation for secure, easy-to-use encryption.
+* **[KyberLock:](https://github.com/fruiz500/KyberLock)** Dedicated post-quantum implementation.
+* **[SynthPass:](https://github.com/fruiz500/SynthPass)** The original password synthesis logic.
 
 ---
-*Developed by an Associate Professor & Cryptography Researcher.*
+*Developed by a Professor & Cryptography Researcher.*
