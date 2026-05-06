@@ -1,7 +1,7 @@
 # Privacy Bar: Post-Quantum Secure Browser Communication
 ### A Hybrid PQC Implementation for the Modern Web
 
-**Privacy Bar** is a Chrome extension (Manifest V3) designed to protect digital communications against the "Harvest Now, Decrypt Later" threat. It represents the evolution of the PassLok, KyberLock, and SynthPass ecosystem, condensed into a streamlined, high-performance browser tool.
+**Privacy Bar** is a Chrome extension (Manifest V3) designed to protect digital communications against the "Harvest Now, Decrypt Later" threat. It represents the evolution of the PassLok, KyberLock, and SynthPass ecosystem, condensed into a streamlined, high-performance extension for Chromium browsers.
 
 ---
 
