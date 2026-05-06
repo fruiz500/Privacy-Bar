@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Privacy Bar Safe Space (Isolated)</title>
+  <style>
+    body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; display: flex; flex-direction: column; }
+    #security-bar {
+      background: #f0fdf4; 
+      border-bottom: 1px solid #bbf7d0; 
+      color: #166534; 
+      padding: 6px 12px; 
+      font-family: sans-serif; 
+      font-size: 12px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      z-index: 10000;
+    }
+    #site-frame { flex-grow: 1; border: none; background: white; width: 100%; }
+    #sanitized-container { display: none; flex-grow: 1; overflow-y: auto; background: white; }
+  </style>
+</head>
+<body>
+  <div id="security-bar">
+    <span><strong>Privacy Bar Safe Space:</strong> This page is isolated from other extensions.</span>
+    <span id="target-display" style="opacity: 0.7; font-size: 11px;"></span>
+  </div>
+
+  <iframe id="site-frame" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals"></iframe>
+  
+  <div id="sanitized-container"></div>
+
+  <script src="lib/purify.js"></script>
+  <script src="safeview.js"></script>
+</body>
+</html>

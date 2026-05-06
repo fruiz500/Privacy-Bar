@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Privacy Bar - Crypto & Privacy Help</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+
+<body>
+  <nav
+    style="background: var(--bg-secondary); padding: 10px; border-radius: 4px; margin-bottom: 20px; font-size: 0.85rem; display: flex; gap: 10px; flex-wrap: wrap;">
+    <a href="help_common.html"
+      style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">COMMON
+      HELP</a>
+    <a href="help_passwords.html"
+      style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">PASSWORDS</a>
+    <a href="help_crypto.html"
+      style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">CRYPTO</a>
+    <a href="help_notes.html"
+      style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">PAGE
+      NOTES</a>
+  </nav>
+
+  <h2>Crypto & Privacy Help</h2>
+
+  <div id="search-container">
+    <input type="text" id="help-search"
+      placeholder="Search (e.g. 'how to decrypt', 'PolyCrypt', 'entropy', 'PQ Lock')...">
+  </div>
+
+  <div id="help-list">
+
+    <div class="accordion-item">
+      <div class="accordion-header">Start Here: The Lock and Key Story</div>
+      <div class="accordion-content">
+        Privacy Bar is built on <strong>Asymmetric Encryption</strong>. To understand how it protects you, think of a
+        physical padlock:
+        <br><br>
+        <ul>
+          <li><strong>Your Key (Secret):</strong> This is your private digital identity, generated from your
+            <strong>Master Key (MK)</strong>. You must never share it. Only this Key can open data secured with your
+            matching Lock.
+          </li>
+          <li><strong>Your Lock (Public):</strong> A string derived from your Key. You share this freely (via email,
+            social media, etc.) so others can send you private messages.</li>
+          <li><strong>The Logic:</strong> You encrypt data using the <strong>recipient's Lock</strong>. Once locked,
+            only <strong>their Key</strong> can open it. Even you cannot unlock it once it has been encrypted.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">How to Secure and Send a Message</div>
+      <div class="accordion-content">
+        <ol>
+          <li>Enter your <strong>MK</strong> and email address.</li>
+          <li>Select the recipient(s) in the <strong>Directory</strong>. <em>Tip: Select "Me" to ensure you can read the
+              message yourself later.</em></li>
+          <li>Type your message or drag a file into the <strong>Input Box</strong>.</li>
+          <li>Select a mode: <strong>Signed</strong> (identifies you), <strong>Anonymous</strong>, or one of the
+            <em>Pro</em> modes.
+          </li>
+          <li>Click <strong>Encrypt</strong> to inject the result into the page, or <strong>To File</strong>
+            (<em>Pro</em>) to download
+            it.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">How to Open and Verify a Message</div>
+      <div class="accordion-content">
+        <ol>
+          <li>Ensure your <strong>MK</strong> and email are filled.</li>
+          <li>Click an encrypted block on the webpage to load it, or drag an encrypted file into the <strong>Input
+              Box</strong>.</li>
+          <li>Click <strong>Decrypt</strong>. The app automatically detects the mode and sender; no manual selection is
+            needed.</li>
+          <li><strong>Hidden Messages </strong><em>(Pro feature)</em>: If you suspect a "deniable" message is hidden
+            inside, click the
+            <strong>Hidden Msg</strong> button after the main decryption is successful.
+          </li>
+        </ol>
+        <em>Tip: you can decrypt data encrypted in a Pro mode, even at the free level.</em>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Using Shared Keys (When No Recipient is Selected)</div>
+      <div class="accordion-content">
+        If you click <strong>Encrypt</strong> without selecting anyone in the Directory, the app follows this priority
+        chain to choose a <strong>Symmetric</strong> (shared key) mode:
+        <ol>
+          <li><strong>Folder Key:</strong> Uses the Folder Key currently in memory.</li>
+          <li><strong>Pad Mode:</strong> Uses the entropy from a loaded Pad file.</li>
+          <li><strong>Shared Key Prompt:</strong> Prompts you for a key shared with the recipients.
+            <ul>
+              <li><strong>Human Mode:</strong> Entering <strong>5 words separated by commas</strong> triggers the
+                <strong>PolyCrypt</strong> algorithm.
+              </li>
+            </ul>
+          </li>
+        </ol>
+        <em>Note: If you cancel the Key prompt, the process is aborted to prevent accidental plaintext exposure. To
+          invite a new user instead, use the "Invitation" link.</em>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Future-Proofing: Post-Quantum (PQ) Encryption <span class="pro-tag">PRO</span></div>
+      <div class="accordion-content">
+        Post-Quantum (PQ) encryption protects your data against future threats from quantum computers that could
+        potentially break traditional algorithms.
+        <ul>
+          <li><strong>PQ Lock Requirement:</strong> To use PQ modes, recipients must have a compatible
+            <code>PQ Lock</code> saved in the Directory.
+          </li>
+          <li><strong>Automatic Filtering:</strong> When you select a PQ encryption mode, the recipient list
+            automatically filters to display only those contacts with a valid PQ lock.</li>
+          <li><strong>Two Modes:</strong> PQ-encrypted data can be in <strong>PQ-Signed</strong> mode, where recipients
+            can verify the sender, or <strong>PQ-Anonymous</strong> carrying zero sender information.</li>
+          <li><strong>Legacy Support:</strong> PQ features are integrated without removing legacy functionality,
+            maintaining compatibility with standard encryption methods.</li>
+        </ul>
+        <em>Note: This feature requires a Pro license.</em>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Unbreakable Security: Pad Mode & Entropy Extraction<span class="pro-tag">PRO</span>
+      </div>
+      <div class="accordion-content">
+        <strong>Pad Mode</strong> is mathematically unbreakable by any computer, present or future.
+        <ul>
+          <li><strong>Entropy Extraction:</strong> Unlike standard encryption, Pad Mode extracts the <strong>entropy
+              (randomness)</strong> of a regular file to create a key.</li>
+          <li><strong>Usage:</strong> Drag your key file to the area <strong>below the Action buttons</strong>. Ensure
+            no recipients are selected and click Encrypt.</li>
+          <li><strong>Requirement:</strong> Both parties must use the exact same file (content must match exactly).</li>
+        </ul>
+        <em>Note: This feature requires a Pro license.</em>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Human Mode: The PolyCrypt Algorithm</div>
+      <div class="accordion-content">
+        <strong>Human Mode</strong> uses the <strong>PolyCrypt</strong> cipher, designed to be computable manually with
+        <strong>pencil and paper</strong>.
+        <ul>
+          <li><strong>How to Trigger:</strong> Enter <strong>5 words separated by commas</strong> when prompted for a
+            Shared Key.</li>
+          <li>Full technical details and manual instructions: <a href="https://privacybar.net/human/"
+              target="_blank">privacybar.net/human/</a>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Self-Destructing Messages (Read-once) <span class="pro-tag">PRO</span></div>
+      <div class="accordion-content">
+        <p><strong>Read-once</strong> is the highest level of digital privacy. Decryption keys are destroyed immediately
+          after use, so a message can never be opened twice.</p>
+        <ul>
+          <li><strong>The Handshake:</strong> The first time you message someone, a "Reset Handshake" occurs. You will
+            see a <strong>"Waiting"</strong> status until they reply.</li>
+          <li><strong>Once per Message:</strong> As soon as you successfully decrypt a message, the extension updates
+            your keys for the <em>next</em> one. Re-opening the same message will fail.</li>
+          <li><strong>Fixing Sync Errors:</strong> If you see a "Sync Error," your extensions are out of step. Both you
+            and the recipient should click <strong>Manage Directory</strong>, find the contact, and click <strong>Reset
+              RO</strong>. The next message will re-sync your privacy.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Securing Files via Drag & Drop<span class="pro-tag">PRO</span></div>
+      <div class="accordion-content">
+        You can secure entire files by dragging them into the <strong>Input Box</strong>:
+        <ul>
+          <li><strong>Encryption:</strong> Drag any file into the box to encrypt it using your selected mode.</li>
+          <li><strong>Decryption:</strong> Drag an encrypted file (or camouflaged image) into the box. The decrypted
+            result is saved to your Downloads folder.</li>
+          <li><strong>Camouflage Integration:</strong> If an image is already loaded, encrypted files are
+            <strong>automatically camouflaged</strong> within that image.
+          </li>
+        </ul>
+        <em>Note: This feature requires a Pro license.</em>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Image Secrets: Steganography & Camouflage</div>
+      <div class="accordion-content">
+        <strong>1. Loading an Image:</strong>
+        <ul>
+          <li>Click the <strong>image button</strong> at the bottom of the UI, or <strong>Alt+Click</strong> (Opt+Click
+            on Mac) any image on a webpage.</li>
+        </ul>
+        <strong>2. LSB (Invisible Embedding):</strong> Hides data inside pixels. Load an image, type text, and click
+        <strong>To Image</strong> or drag a file onto the image <em>(Pro)</em>.
+        <br><br>
+        <strong>3. Camouflage (High Capacity):</strong> Appends data to the file. Happens automatically when encrypting to file if an image is loaded.
+        <br><br>
+        <strong>4. Extraction:</strong> Click <strong>From Image</strong> for LSB, or drag the image into the
+        <strong>Main Box</strong> for Camouflage.
+        <br><br>
+        <em>Note: The Camouflage feature requires a Pro license. LSB embedding is enabled in free mode</em>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">The Digital Handshake: Sending Invitations</div>
+      <div class="accordion-content">
+        To start communicating with someone new, use the <strong>Create Invitation</strong> link on the UI.
+        <ul>
+          <li><strong>What it does:</strong> It generates a friendly "onboarding" message containing your public
+            <strong>Lock</strong> and instructions for installing Privacy Bar.
+          </li>
+          <li><strong>No Encryption:</strong> Invitations are plaintext and contain no encrypted material. They are
+            simply a way to introduce yourself and share your Lock.</li>
+          <li><strong>Usage:</strong> Click the link to place the text into the page (or clipboard) for easy sending.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Managing Contacts, PQ Locks, and Fingerprints</div>
+      <div class="accordion-content">
+        The app manages both 50-character <strong>Classic Locks</strong> and much longer <strong>PQ Locks</strong>
+        (Post-Quantum).
+        <ul>
+          <li><strong>Verification:</strong> Once both Locks are entered for a contact, a 16-letter
+            <strong>fingerprint</strong> appears next to their name for easy verification.
+          </li>
+          <li><strong>PQ Filtering:</strong> If you select a PQ encryption mode, the recipient list will automatically
+            filter to show <em>only</em> users who have a PQ Lock saved.</li>
+          <li><strong>Legacy Users ($):</strong> Names starting with <strong>$</strong> are hidden from selection but
+            remain active for recognizing incoming messages.</li>
+          <li><strong>Lists:</strong> Create a <code>=List=</code> by entering names separated by commas (e.g.,
+            <code>Alice,Bob</code>) in the Directory manager.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Advanced: Folder Keys, Hidden Messages & P2P Chat<span class="pro-tag">PRO</span>
+      </div>
+      <div class="accordion-content">
+        <ul>
+          <li><strong>Folder Keys:</strong> Click <strong>Encrypt</strong> with an empty Input Box to create one. You
+            can re-encrypt them for new groups or click <strong>Wrap</strong> to hide them in a decoy "business email."
+          </li>
+          <li><strong>Split/Join:</strong> Divide a secret into parts (e.g., "3,2" where 3 parts are made and any 2
+            rebuild it). This is a mathematical split, not encryption.</li>
+          <li><strong>P2P Chat:</strong> Create an invitation for a Jitsi chat. Decrypting the result provides a "Join"
+            button and copies the E2E password to your clipboard.</li>
+        </ul>
+        <em>Note: These features require a Pro license.</em>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Deniable Privacy: The Hidden Message <span class="pro-tag">PRO</span></div>
+      <div class="accordion-content">
+        <p>You can hide a secret "decoy" message inside a standard encrypted block.</p>
+        <ol>
+          <li>Toggle the <strong>Hidden Msg</strong> button before encrypting.</li>
+          <li>When prompted, enter a <strong>different</strong> secret key than your Master Key.</li>
+          <li>The extension will stretch this decoy key separately, creating a hidden layer that only someone with that
+            specific key can find.</li>
+        </ol>
+        <p><em>Note: If someone forces you to decrypt the main message, the hidden one remains invisible and
+            mathematically undetectable.</em></p>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Using Privacy Bar on Mobile</div>
+      <div class="accordion-content">
+        <p>While most mobile browsers do not currently support Chrome extensions, you can still access your synthesized
+          passwords and encrypt/decrypt messages on any device (basic modes only) thanks to the deterministic nature of
+          our math.</p>
+
+        <div
+          style="background: var(--bg-secondary); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin: 10px 0;">
+          <strong>Privacy Bar Mobile:</strong><br>
+          <a href="https://privacybar.net/mobile" target="_blank"
+            style="color: var(--accent); font-weight: bold; word-break: break-all;">https://privacybar.net/mobile</a>
+        </div>
+
+        <ul>
+          <li><strong>Parity:</strong> Because the generation is mathematical, entering the same <strong>Master
+              Key</strong> and <strong>Email</strong> on your phone will produce the exact same
+            Lock and Key as the desktop extension.</li>
+          <li><strong>Security:</strong> No data is sent to a server; all processing occurs locally in your mobile
+            browser's memory.</li>
+          <li><strong>Pro Tip:</strong> Open the link in Safari (iOS) or Chrome (Android) and use the <strong>"Add to
+              Home Screen"</strong> option to use it like a standalone app.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="help.js"></script>
+</body>
+
+</html>

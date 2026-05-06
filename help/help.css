@@ -1,0 +1,112 @@
+/* help-common.css */
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+  color: #333;
+  background: #f9f9f9;
+}
+
+h2 {
+  color: #2c3e50;
+  text-align: center;
+}
+
+/* Search bar */
+#search-container {
+  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  background: #f9f9f9;
+  padding: 10px 0;
+}
+
+#help-search {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Accordion */
+.accordion-item {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.accordion-header {
+  padding: 15px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  background: #fff;
+}
+
+.accordion-header:hover {
+  background: #f0f7ff;
+}
+
+.accordion-header::after {
+  content: '+';
+  font-size: 1.2rem;
+  color: #007bff;
+  transition: transform 0.2s;
+}
+
+.accordion-item.active .accordion-header {
+  border-bottom: 1px solid #eee;
+  color: #007bff;
+}
+
+.accordion-item.active .accordion-header::after {
+  content: '−';
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  padding: 0 15px;
+  max-height: 0;
+  overflow: hidden; /* Keeps it hidden while closed */
+  transition: max-height 0.3s ease-out, padding 0.3s ease;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.accordion-item.active .accordion-content {
+  /* Bumping to 1000px to accommodate long audit instructions */
+  max-height: 1000px; 
+  padding: 15px;
+  
+  /* Enable scrolling if content exceeds space */
+  overflow-y: auto; 
+}
+
+.hidden {
+  display: none;
+}
+
+.pro-tag {
+  background-color: #fed47d;
+  color: #000;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 10px;
+  vertical-align: middle;
+  text-transform: uppercase;
+}

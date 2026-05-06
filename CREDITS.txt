@@ -1,0 +1,47 @@
+PRIVACY BAR - THIRD-PARTY ATTRIBUTIONS
+
+This software utilizes the following open-source libraries:
+
+---------------------------------------------------------
+1. Tweet NaCl crypto library 1.0.3
+   Project: https://github.com/dchest/tweetnacl-js
+   License: Unlicense
+   Copyright (c) 2020 Dmitry Chestnykh
+---------------------------------------------------------
+2. ed2curve-js conversion of curve coordinates 0.2.1
+   Project: https://github.com/dchest/ed2curve-js
+   License: Unlicense
+   Copyright (c) 2019 Dmitry Chestnykh
+---------------------------------------------------------
+3. scrypt-async-js KDF 2.0.1
+   Project: https://github.com/dchest/scrypt-async-js
+   License: BSD
+   Copyright (c) 2016 Dmitry Chestnykh
+---------------------------------------------------------
+4. Noble Post-Quantum cryptography library 0.5.4
+   Project: https://github.com/paulmillr/noble-post-quantum
+   License: MIT
+   Copyright (c) 2026 Paul Miller
+---------------------------------------------------------
+5. lz-string compression algorithm 1.4.5
+   Project: https://github.com/pieroxy/lz-string
+   License: MIT
+   Copyright (c) 2023 Pieroxy
+---------------------------------------------------------
+6. DOMPurify sanitizer 3.3.3 
+   Project: https://github.com/cure53/DOMPurify
+   License: Apache 2.0
+   Copyright (c) 2025 Dr.-Ing. Mario Heiderich, Cure53
+---------------------------------------------------------
+7. jpeg image steganography
+   Project: https://github.com/owencm/js-steg
+   License: MIT
+   Copyright (c) 2013 Owen Campbell-Moore and others
+---------------------------------------------------------
+8. Shamir Secret Sharing Scheme
+   Project: https://github.com/amper5and/secrets.js
+   License: MIT
+   Copyright (c) 2017 Alexander Stetsyuk
+---------------------------------------------------------
+
+"Standing on the shoulders of giants to keep the servers at bay."

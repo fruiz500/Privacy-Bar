@@ -1,0 +1,20 @@
+PROPRIETARY LICENSE: PRIVACY BAR
+
+Copyright (c) 2026 Francisco Ruiz. All rights reserved.
+
+1. PERMISSION TO USE: Permission is granted to any person obtaining a copy of this software 
+   via the Chrome Web Store to use the software for personal, non-commercial purposes.
+
+2. SOURCE TRANSPARENCY: The source code is provided in a readable format to facilitate 
+   security auditing and trust. "Reading" the code does not constitute a license to copy, 
+   modify, or redistribute the logic.
+
+3. RESTRICTIONS: You may not:
+   a. Modify, translate, or create derivative works of the software.
+   b. Redistribute the software or host it on any other store/repository.
+   c. Reverse engineer the licensing or "Pro" activation logic.
+
+4. WARRANTY: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. 
+   IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM OR DAMAGES.
+
+For inquiries: https://privacybar.net/report.html

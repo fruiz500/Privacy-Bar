@@ -1,0 +1,847 @@
+/* --- 1. UNIFIED THEME VARIABLES --- */
+:root {
+    /* Dark Mode */
+    --primary: #58a6ff;
+    --primary-dark: #1f6feb;
+    --bg: #0d1117;
+    --card-bg: rgba(22, 27, 34, 0.85);
+    --text-main: #f0f6fc;
+    --text-muted: #8b949e;
+    --border: rgba(240, 246, 252, 0.1);
+    /* Lightened Toolbar (was #161b22) for better button contrast */
+    --toolbar-bg: #323a45;
+    --toolbar-border: #30363d;
+    --root-size: 15px;
+}
+
+html {
+    font-size: var(--root-size);
+}
+
+html.light-mode {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    /* Toolbar/Utility Colors for Light Mode */
+    --toolbar-bg: #f1f5f9;
+    --toolbar-border: #cbd5e1;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    padding: 12px;
+    background: var(--bg);
+    color: var(--text-main);
+    margin: 0;
+    /* This ensures everything in the body scales with the variable */
+    font-size: 1rem; 
+    transition: background 0.2s, color 0.2s;
+}
+
+/* Update inputs to use the new variable */
+input[type=text],
+input[type=password],
+input[type=email],
+textarea,
+#mainBox {
+    background: var(--input-bg) !important;
+    color: var(--text-main) !important;
+    /* Set to 1rem (15px) so it matches the new body scale */
+    font-size: 1rem; 
+    line-height: 1.5;
+}
+
+/* Real Tab Navigation */
+#tab-navigation {
+    display: flex;
+    gap: 0;
+    padding: 0 4px;
+    margin-bottom: -1px;
+    /* Pulls the card up slightly */
+    border-bottom: 1px solid var(--border);
+}
+
+/* --- TABS: DARK MODE REFINEMENT --- */
+
+/* 1. Base State: Inactive Tabs are now Black */
+.tab-btn {
+    flex: 1;
+    padding: 0.65rem 0.25rem;
+    background: #000000;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    cursor: pointer;
+    font-size: 0.87rem; /* ~13px baseline */
+    font-weight: 500;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-btn:hover:not(.active) {
+    background-color: #161b22;
+    /* Darker gray on hover */
+    opacity: 1;
+}
+
+/* --- 1. THEME SELECTOR & INACTIVE TABS SYNC --- */
+/* --- 1. SHARED BASE: Inactive Tabs & Utility Buttons --- */
+.theme-toggle-btn,
+.tab-btn:not(.active) {
+    background: transparent !important;
+    color: var(--text-muted);
+    border: 1px solid transparent;
+    border-bottom: 1px solid var(--border);
+    opacity: 0.7;
+    transition: opacity 0.2s, color 0.2s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 2. SPECIFIC SIZING: Scaling vs Theme Toggle */
+.theme-toggle-btn {
+    flex: 0 0 50px; /* Standard width for LITE/DARK */
+    font-size: 10px;
+    font-weight: 700;
+}
+
+#scale-up-btn, 
+#scale-down-btn {
+    flex: 0 0 35px; /* Narrower for A+/A- */
+    font-size: 11px;
+}
+
+.theme-toggle-btn:hover {
+    opacity: 1;
+    color: var(--primary);
+}
+
+/* 3. ACTIVE TAB: THE "ERASER" FIX */
+.tab-btn.active {
+    background: var(--card-bg) !important;
+    color: var(--primary);
+    border: 1px solid var(--border);
+    /* Overlap and match background to "erase" the nav-bar line */
+    border-bottom: 3px solid var(--card-bg) !important;
+    margin-bottom: -2px; 
+    z-index: 5;
+    position: relative;
+    font-weight: 600;
+    opacity: 1;
+}
+
+/* 3. LIGHT MODE OVERRIDES: Restore previous functionality */
+html.light-mode .tab-btn {
+    background: #e2e8f0;
+    /* Original light gray for inactive tabs */
+    color: var(--text-muted);
+}
+
+html.light-mode .tab-btn.active {
+    background: var(--card-bg) !important;
+    /* White in light mode */
+    border-bottom: 2px solid var(--card-bg) !important;
+}
+
+html.light-mode .theme-toggle-btn,
+html.light-mode .tab-btn:not(.active) {
+    background: transparent !important;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 0 0 8px 8px;
+    /* Top flat to meet tabs */
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Master Key and Status cards keep full rounding */
+#master-password-section,
+#directory-card {
+    border-radius: 8px;
+}
+
+/* 2. FIX: Status Card & Toolbar */
+#global-status-card {
+    background: var(--card-bg) !important;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 0 0 8px 8px;
+    /* Flat top to join seamlessly with tabs */
+    margin-top: 0;
+    border-top: none;
+    /* Let the nav-bar's bottom border handle the top line */
+}
+
+.hidden {
+    display: none !important;
+}
+
+.btn-encrypt {
+    background-color: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 8px;
+    transition: background 0.15s;
+}
+
+.btn-encrypt:hover {
+    background-color: #bfdbfe;
+}
+
+.btn-decrypt {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    padding: 8px;
+    transition: background 0.15s;
+}
+
+.btn-decrypt:hover {
+    background-color: #bbf7d0;
+}
+
+.btn-hidden {
+    background-color: #f1f5f9;
+    color: #667892;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px;
+    transition: background 0.15s;
+}
+
+.btn-hidden:hover {
+    background-color: #e2e8f0;
+}
+
+.btn-primary {
+    background-color: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 10px;
+    font-weight: 600;
+    transition: background 0.15s;
+}
+
+.btn-primary:hover {
+    background-color: #bfdbfe;
+}
+
+.btn-secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px;
+    transition: background 0.15s;
+}
+
+.btn-secondary:hover {
+    background-color: #e2e8f0;
+}
+
+h2 {
+    font-size: 0.93rem; /* ~14px baseline */
+    margin-bottom: 0.8rem;
+    margin-top: 0;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+button {
+    width: 100%;
+    padding: 0.65rem; /* ~10px */
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.8rem; /* ~13px baseline */
+    box-sizing: border-box;
+}
+
+button:active {
+    filter: brightness(0.9);
+}
+
+input[type=text],
+input[type=password],
+input[type=email],
+textarea {
+    width: 100%;
+    padding: 8px 10px;
+    margin-top: 6px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+input:focus,
+textarea:focus {
+    outline: 2px solid #bfdbfe;
+    border-color: var(--primary);
+}
+
+label {
+    font-size: 0.8rem; /* ~12px baseline */
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 0.65rem;
+    display: block;
+}
+
+#mainMsg {
+    white-space: pre-wrap;
+    /* Forces the browser to honor the \n character */
+    line-height: 1.4;
+    /* Gives the two lines some breathing room */
+    font-size: 0.7rem;
+}
+
+/* Unified Box Styling */
+#mainBox {
+    width: 100%;
+    min-height: 150px;
+    background-color: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    margin: 12px 0;
+    box-sizing: border-box;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+#mainBox.drag-over {
+    background-color: #eff6ff !important;
+    border: 2px dashed var(--primary) !important;
+}
+
+/* Toolbar Dropdown & Groups */
+#mode-select, 
+.mode-dropdown {
+    font-size: 0.7rem; /* ~13px baseline, responds to scale */
+    height: auto;
+    border-radius: 4px;
+    background: var(--input-bg);
+    color: var(--text-main);
+}
+
+#mode-select optgroup {
+    font-size: 0.8rem; /* Scalable group headers */
+    font-weight: bold;
+    font-style: normal;
+}
+
+#mode-select option {
+    font-size: 0.87rem; /* Scalable items */
+    padding: 4px;
+}
+
+/* Toolbar Options & Labels */
+.toolbar-options {
+    display: flex;
+    gap: 0.65rem;
+    align-items: center;
+}
+
+.toolbar-options label {
+    font-size: 0.8rem; /* ~12px baseline, scales with A+/A- */
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* Ensure checkboxes themselves don't stay tiny */
+.toolbar-options input[type="checkbox"] {
+    width: 0.9rem;
+    height: 0.9rem;
+    cursor: pointer;
+}
+
+/* Toolbar Styling */
+.toolbar-container {
+    background: #f1f5f9;
+    padding: 1cqi;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+}
+
+.toolbar-container,
+.toolbar-row,
+#toolbar1,
+#toolbar2 {
+    background: var(--toolbar-bg) !important;
+    border: 1px solid var(--toolbar-border) !important;
+    color: var(--text-main);
+    border-radius: 6px 6px 0 0;
+}
+
+.intLink {
+    padding: 1px;
+    border-radius: 1px;
+    transition: background 0.2s;
+}
+
+.intLink:hover {
+    background: #cbd5e1;
+}
+
+.intLink.active {
+    background-color: #94a3b8;
+    outline: 1px solid #475569;
+}
+
+/* Status Area */
+
+#stego-image-container {
+    margin-top: 10px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+    background: #f9f9f9;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+#stego-image-container:hover {
+    background: #eff6ff;
+    /* Light blue tint on hover */
+    border-color: #3b82f6;
+    /* Blue border on hover */
+}
+
+#help-btn {
+    width: auto;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #eee;
+    font-size: 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-left: 8px;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+#help-btn:hover {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+}
+
+#safe-view-btn {
+    background-color: #fefce8;
+    color: #854d0e;
+    border: 1px solid #fef08a;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+#safe-view-btn:hover {
+    background-color: #fef9c3;
+    border-color: #fde047;
+}
+
+/* Double-Height Sliding Drawer */
+.button-viewport {
+    overflow: hidden;
+    width: 100%;
+    margin-top: 10px;
+    position: relative;
+    height: 90px;
+    /* Fixed height for 2 rows + gap */
+}
+
+#button-ribbon {
+    display: flex;
+    width: 200%;
+    height: 100%;
+    transition: transform 0.3s ease-in-out;
+}
+
+.button-group {
+    display: grid;
+    width: 50%;
+    box-sizing: border-box;
+    gap: 6px;
+    padding: 2px;
+    /* 2 rows of 40px each */
+    grid-template-rows: 40px 40px;
+}
+
+/* Main Group: 2 columns for buttons + 40px for Nav button at the end */
+#group-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr 40px;
+    grid-template-rows: 40px 40px;
+    gap: 6px;
+}
+
+/* Pro Group: 40px for Nav button at the start + 3 columns */
+#group-pro {
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr;
+    grid-template-rows: 40px 40px;
+    gap: 6px;
+}
+
+.btn-nav {
+    grid-row: 1 / span 2;
+    background-color: #e2e8f0;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 18px; /* Naturally overrides the 13px base */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1; /* Keeps arrows centered during font scaling */
+}
+
+/* Explicit Placement */
+#btn-more {
+    grid-column: 3;
+    /* Force to the 3rd column */
+}
+
+#btn-less {
+    grid-column: 1;
+    /* Force to the 1st column */
+}
+
+#button-ribbon.show-pro {
+    transform: translateX(-50%);
+}
+
+/* Pro Button: Split/Join (Deep Indigo) */
+/* Pro Button: Split/Join (Soft Lavender) */
+.btn-split {
+    background-color: #f5f3ff;
+    color: #5b21b6;
+    border: 1px solid #ddd6fe;
+}
+
+.btn-split:hover {
+    background-color: #ede9fe;
+}
+
+/* Pro Button: P2P Chat (Pale Cyan) */
+.btn-chat {
+    background-color: #f0fdfa;
+    color: #0f766e;
+    border: 1px solid #ccfbf1;
+}
+
+.btn-chat:hover {
+    background-color: #ccfbf1;
+}
+
+.btn-link {
+    font-size: 0.68rem;
+}
+
+.toolbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: #f1f3f4;
+    padding: 5px 8px;
+    border-bottom: 1px solid #ccc;
+    user-select: none;
+}
+
+.mode-dropdown {
+    flex: 0 0 125px;
+    font-size: 11px;
+    height: 22px;
+    border: 1px solid #999;
+    border-radius: 3px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.toolbar-options {
+    display: flex;
+    gap: 10px;
+}
+
+.toolbar-options label {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.toolbar-options input[type="checkbox"] {
+    margin: 0;
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+}
+
+.toolbar-container,
+.toolbar-row {
+    background: var(--toolbar-bg) !important;
+    border-color: var(--toolbar-border) !important;
+    color: var(--text-main);
+}
+
+/* Fingerprint styling */
+.hashili {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85em;
+    color: #666;
+    margin-left: 8px;
+    cursor: help;
+    border-bottom: 1px dotted #ccc;
+    padding: 0 2px;
+}
+
+.hashili:hover {
+    color: #000;
+    background-color: #f0f7ff;
+}
+
+/* Tooltip styling (Standard HTML title attribute is often too slow) */
+/* This CSS creates a more responsive "Pseudo-tooltip" using the title attribute */
+.hashili[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    background: #333;
+    color: #fff;
+    font-size: 0.73rem; /* ~11px baseline */
+    padding: 0.35rem 0.65rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 100;
+    margin-top: 20px;
+    margin-left: -20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 1. The Button State - Keeping your contrast/opacity logic */
+.pro-locked {
+    position: relative !important;
+    overflow: visible !important;
+    filter: contrast(0.8) opacity(0.8);
+    cursor: pointer;
+}
+
+/* 2. Kill the old CSS-drawn padlock icon entirely */
+.pro-locked::before {
+    display: none !important;
+}
+
+/* 3. Repurpose the badge into a monochrome Unicode icon */
+.pro-locked::after {
+    /* \1F512 is the Lock; \FE0E forces the monochrome text-style variant */
+    content: "\01F512\00FE0E";
+    position: absolute;
+    top: 2px;
+    /* Adjusted for font-ascent alignment */
+    right: 6px;
+    font-size: 14px;
+    /* Matches your original 14px SVG footprint */
+    line-height: 1;
+    color: #000000;
+    /* Standard black to match your SVG fill */
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    opacity: 0.8;
+    /* Maintaining your blend-in logic */
+    z-index: 99;
+    pointer-events: none;
+}
+
+/* 4. Maintaining your hover logic */
+.pro-locked:hover {
+    filter: contrast(1) opacity(1) !important;
+}
+
+/* Modal Overlay Background */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.05);
+
+    /* Increased blur to create separation without needing dark colors */
+    backdrop-filter: blur(8px) saturate(110%);
+    -webkit-backdrop-filter: blur(8px) saturate(110%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.modal-card {
+    width: 280px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+}
+
+#license-input-field {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    font-size: 12px;
+    padding: 10px;
+    background: var(--bg);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    outline: none;
+}
+
+#license-input-field:focus {
+    border-color: #bfdbfe;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* 3. FIX: Hardcoded Light Elements (Matching Mobile App) */
+body #mainBox, 
+body #lockList {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid var(--border); /* Pulls from m-pass/site-notes-input */
+    border-radius: 6px;
+    font-size: 14px; /* Matches standard input font size */
+    padding: 8px;    /* Provides consistent internal spacing */
+}
+
+#lockList option {
+    font-size: 14px;
+    padding: 4px 8px;
+}
+
+/* 4. THEME TOGGLE STYLING: Separate from functional tabs */
+.theme-toggle-btn {
+    flex: 0 0 55px;
+    padding: 10px 4px;
+    border: 1px solid transparent;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.theme-toggle-btn:hover {
+    opacity: 1;
+    color: var(--primary);
+}
+
+#decoy-container.hidden {
+    display: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/**
+ * UI: Decoy Container & Input
+ */
+#decoy-container {
+    margin-top: 8px;
+    padding: 6px;
+    /* Tightened from 8px */
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    /* Theme-reactive background */
+}
+
+#decoyMessageArea {
+    width: 100%;
+    background: #ffffff;
+    /* Match mainBox */
+    color: #000000;
+    /* Match mainBox */
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    padding: 6px;
+    box-sizing: border-box;
+    resize: vertical;
+    outline: none;
+}
+
+#decoyMessageArea:focus {
+    border-color: var(--primary);
+}
+
+#decoy-container .hidden {
+    display: none;
+}
+
+/* 3. DECOY GHOST FIX */
+#decoy-input-area {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-top: 10px;
+    padding: 10px;
+    transition: opacity 0.2s;
+}
+
+/* Forces total disappearance of borders and spacing */
+#decoy-input-area.hidden {
+    display: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    height: 0;
+    overflow: hidden;
+}
+
+/* --- THE PATCH: SOFT DARK BORDERS --- */
+html:not(.light-mode) body #mainBox,
+html:not(.light-mode) body #lockList,
+html:not(.light-mode) body #decoyMessageArea {
+    border-color: rgba(94, 94, 94, 0.5) !important;
+}
+
+/* For blinking messages */
+@keyframes pb-blink { 
+  0%, 100% { opacity: 1; } 
+  50% { opacity: 0.4; } 
+}
+.pb-stretching { 
+  animation: pb-blink 0.8s ease-in-out infinite; 
+  font-weight: bold; 
+  color: #0284c7;
+}

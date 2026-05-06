@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Privacy Bar - Common Help</title>
+    <link rel="stylesheet" href="help.css">
+</head>
+
+<body>
+    <nav
+        style="background: var(--bg-secondary); padding: 10px; border-radius: 4px; margin-bottom: 20px; font-size: 0.85rem; display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="help_common.html"
+            style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">COMMON
+            HELP</a>
+        <a href="help_passwords.html"
+            style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">PASSWORDS</a>
+        <a href="help_crypto.html"
+            style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">CRYPTO</a>
+        <a href="help_notes.html"
+            style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">PAGE
+            NOTES</a>
+    </nav>
+
+    <h2>General Help & Security Audit</h2>
+    <div id="search-container">
+        <input type="text" id="help-search"
+            placeholder="Search (e.g. 'how to decrypt', 'PolyCrypt', 'entropy', 'PQ Lock')...">
+    </div>
+
+    <div id="help-list">
+
+        <div class="accordion-item">
+            <div class="accordion-header">PassLok & KyberLock Compatibility</div>
+            <div class="accordion-content">
+                <p>Privacy Bar is designed for interoperability with our established cryptographic tools. However,
+                    compatibility depends on the <strong>Mode</strong> and <strong>Output Type</strong>.</p>
+
+                <strong>✅ Fully Compatible (Text Messages):</strong>
+                <ul>
+                    <li><strong>PassLok series:</strong> Standard <strong>Anonymous</strong> and
+                        <strong>Signed</strong> text modes are fully compatible between both apps, as well as the hidden message feature. Locks are the same.</li>
+                    <li><strong>KyberLock series (PQ):</strong> Post-Quantum <strong>Anonymous</strong> and
+                        <strong>Signed</strong> modes are compatible. Note: Privacy Bar's PQ Signed mode is currently one-way
+                        compatible with KyberLock. Locks are compatible.</li>
+                </ul>
+
+                <strong>❌ Not Compatible (App-Specific):</strong>
+                <ul>
+                    <li><strong>File Output:</strong> Encrypted files (<code>.pbx</code>) and <strong>Image
+                            Camouflage</strong> are unique to Privacy Bar. They cannot be decrypted by PassLok or KyberLock, which still have their own formats for encrypted files.</li>
+                    <li><strong>Image Steganography:</strong> While all apps can hide data in pixels, Privacy Bar uses a
+                        different mathematical method (PRNG) to distribute the data. Messages hidden in images via
+                        Privacy Bar cannot yet be extracted by our other tools.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header">Using Privacy Bar on Mobile</div>
+            <div class="accordion-content">
+                <p>While most mobile browsers do not currently support Chrome extensions, you can still access your
+                    synthesized
+                    passwords and encrypt/decrypt messages on any device (basic modes only) thanks to the deterministic
+                    nature of our math.</p>
+
+                <div
+                    style="background: var(--bg-secondary); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin: 10px 0;">
+                    <strong>Privacy Bar Mobile:</strong><br>
+                    <a href="https://privacybar.net/mobile" target="_blank"
+                        style="color: var(--accent); font-weight: bold; word-break: break-all;">https://privacybar.net/mobile</a>
+                </div>
+
+                <ul>
+                    <li><strong>Parity:</strong> Because the generation is mathematical, entering the same
+                        <strong>Master
+                            Key</strong>, <strong>Email</strong>, <strong>Host</strong>, and <strong>Serial</strong> on
+                        your phone will produce
+                        the exact same
+                        results as the desktop extension.
+                    </li>
+                    <li><strong>Security:</strong> No data is sent to a server; all processing occurs locally in your
+                        mobile browser's memory.</li>
+                    <li><strong>Pro Tip:</strong> Open the link in Safari (iOS) or Chrome (Android) and use the
+                        <strong>"Add to
+                            Home Screen"</strong> option to use it like a standalone app.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header">Practice Using the App</div>
+            <div class="accordion-content">
+                <p>New to "Servers are Evil" cryptography? We've built a dedicated laboratory where you can test the
+                    Master Key, Password Synth, Encryption/Decryption, and Page Isolation logic without affecting your
+                    real data.</p>
+                <div style="text-align: center; margin-top: 10px;">
+                    <a href="https://privacybar.net/practice" target="_blank"
+                        style="color: var(--accent); font-weight: bold; text-decoration: none; border: 1px solid var(--accent); padding: 6px 12px; border-radius: 4px;">OPEN
+                        THE LABORATORY</a>
+                </div>
+                <p style="font-size: 0.8rem; margin-top: 10px; color: var(--muted);">The testing lab is a static,
+                    zero-server page. All math is performed locally in your browser.</p>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header">How to Activate Pro Status</div>
+            <div class="accordion-content">
+                <p>Advanced features are unlocked via a <strong>Pro License</strong>. Once you have purchased your key
+                    via Lemon Squeezy, follow these steps:</p>
+                <ol>
+                    <li><strong>Open the dialog:</strong> Click the <strong>Activate Pro</strong> link or any button
+                        with a lock on it to display the activation dialog.</li>
+                    <li><strong>Match your Details:</strong> Enter the <strong>Name</strong> and <strong>Email</strong>
+                        exactly as they appeared on your receipt. The license is mathematically tied to these details.
+                    </li>
+                    <li><strong>Activate:</strong> Paste your license key and click <strong>Activate</strong>.</li>
+                </ol>
+                <ul>
+                    <li><strong>Local Verification:</strong> Activation happens entirely within your browser. The app
+                        does not "phone home" to a server to check your license once it is active.</li>
+                    <li><strong>Feature List:</strong> Pro status unlocks Post-Quantum modes, User-Provided Passwords,
+                        Page Sanitization, Camouflage, and Read-once Page Notes.</li>
+                </ul>
+                <p style="font-size: 0.8rem; color: var(--muted);"><em>Tip: If the key doesn't work, ensure there are no
+                        accidental spaces at the beginning or end of your name/email.</em></p>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header">Why is the app "Stretching" my key?</div>
+            <div class="accordion-content">
+                <p>When you see the blinking <strong>"Stretching"</strong> message, Privacy Bar is performing thousands
+                    of complex mathematical operations to harden your Master Key.</p>
+                <ul>
+                    <li><strong>Security:</strong> This is a "Master Key Shield." It makes it exponentially harder for
+                        automated programs to guess your password.</li>
+                    <li><strong>Performance:</strong> It is normal for the app to pause for a second during this
+                        process. This ensures that even a simple Master Key provides professional-grade protection.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header">How to Report a Bug or Security Vulnerability</div>
+            <div class="accordion-content">
+                <p>Found a glitch? Since Privacy Bar is a solo project, your detailed reports help keep the build stable
+                    while the author is at his day job.</p>
+
+                <ol>
+                    <li><strong>Check the Console:</strong> If something isn't clicking, right-click the Side Panel,
+                        select <strong>Inspect</strong>, and click the <strong>Console</strong> tab. Note any red error
+                        messages.</li>
+                    <li><strong>Gather Details:</strong> Note your Browser version, Operating System (Mac/Win/Linux),
+                        and the Extension version number.</li>
+                    <li><strong>Submit the Report:</strong> Use the official <a
+                            href="https://privacybar.net/report.html" target="_blank"
+                            style="color: var(--accent);">Report Page</a> to send your findings via Formspark.</li>
+                </ol>
+
+                <div
+                    style="background: rgba(210, 153, 34, 0.1); border: 1px solid var(--pro); padding: 12px; border-radius: 4px; font-size: 0.85rem; margin-top: 15px;">
+                    <strong>⚠️ IMPORTANT: Never</strong> include your
+                    Master Key (MK), private keys, or actual sensitive notes in a bug report. Use dummy data ("test123")
+                    to demonstrate the issue.
+                </div>
+
+                <p style="font-size: 0.8rem; color: var(--muted); margin-top: 10px;">
+                    For inquiries and support: <a href="https://privacybar.net/report.html" target="_blank"
+                        style="color: inherit;">https://privacybar.net/report.html</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header">How to Authenticate a Lock (via Email)</div>
+            <div class="accordion-content">
+                <p>When you receive a <strong>Lock</strong> (Public Key) from someone via email, you must ensure it
+                    hasn't been swapped by a "Man-in-the-Middle" attacker.</p>
+                <ol>
+                    <li><strong>Receive:</strong> Save the sender's Lock into your directory.</li>
+                    <li><strong>Verify Fingerprint:</strong> Contact the sender through a <em>different</em> channel
+                        (Signal, Voice Call, or in person).</li>
+                    <li><strong>Compare:</strong> Read the first and last 10 characters of the Lock string to them. If
+                        they match exactly, the Lock is authentic.</li>
+                    <li>If you are the one reading your Lock, it is the string displayed under name "Me" when you click
+                        <strong>Manage Directory</strong> in the <strong>Crypto</strong> tab.
+                    </li>
+                    <li>If you are authenticating a PQ Lock, compare the string that appears to the right of the name
+                        after clicking <strong>Manage Directory.</strong></li>
+                </ol>
+                <p><em>Note: If the Lock doesn't match, delete it immediately. Someone may be trying to intercept your
+                        communications.</em></p>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header">Verify Code Integrity (Audit)</div>
+            <div class="accordion-content">
+                Privacy Bar is source-available so you can verify that the code running in your browser matches the
+                developer's original build. This facilitates security auditing and trust.
+                <br><br>
+                <strong>1. Find your Extension Folder:</strong>
+                <ul>
+                    <li><strong>Mac:</strong>
+                        <code>~/Library/Application Support/Google/Chrome/Default/Extensions/objpfdibjogbdpjjpomnoaflkgdeaanb</code>
+                    </li>
+                    <li><strong>Windows:</strong>
+                        <code>%LOCALAPPDATA%\Google\Chrome\User Data\Default\Extensions/objpfdibjogbdpjjpomnoaflkgdeaanb</code>
+                    </li>
+                    <li><strong>Linux:</strong>
+                        <code>~/.config/google-chrome/Default/Extensions/objpfdibjogbdpjjpomnoaflkgdeaanb</code>
+                    </li>
+                </ul>
+
+                <strong>2. Download the Manifest:</strong>
+                Save the official <a href="https://privacybar.net/hashes.txt" target="_blank">hashes.txt</a> file into
+                that folder.
+                <br><br>
+                <strong>3. Run the Verification Command:</strong>
+                <div
+                    style="background: var(--bg-secondary); padding: 12px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 0.85rem; border-left: 3px solid var(--accent);">
+                    <strong>MacOS/Linux:</strong><br>
+                    <code>shasum -a 256 -c hashes.txt</code>
+                    <br><br>
+                    <strong>Windows (PowerShell):</strong><br>
+                    <code>Get-Content hashes.txt | Where-Object { $_ -notmatch '^#' } | ForEach-Object { $h, $f = $_ -split ' +'; if ((Get-FileHash $f).Hash -eq $h) { "$f: OK" } else { "$f: FAIL" } }</code>
+                </div>
+
+                <div style="font-size: 0.8rem; margin-top: 15px; border: 1px dashed var(--border); padding: 10px;">
+                    <strong>Troubleshooting Mismatches (LF vs CRLF):</strong><br>
+                    If a file says <strong>FAIL</strong> but you haven't changed the code, it is likely due to
+                    line-ending conversion. Windows often converts <code>LF</code> to <code>CRLF</code>, which changes
+                    the file's hash. To be certain, inspect the file manually via DevTools (F12) to audit the raw logic.
+                </div>
+
+                <p style="margin-top:10px;">
+                    <em>Note: "Reading" the code does not constitute a license to copy, modify, or redistribute the
+                        logic. "Don't trust. Verify."</em>
+                </p>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header">Warrant Canary</div>
+            <div class="accordion-content">
+                <p>A Warrant Canary is a method by which a developer can indirectly inform users that they have
+                    <strong>not</strong> been served a secret government subpoena or gag order, possibly to introduce
+                    vulnerabilities.
+                </p>
+
+                <p>To ensure total transparency and avoid potential inconsistencies if the Chrome Web Store version is
+                    ever compromised, we host our live integrity statement externally.</p>
+
+                <div
+                    style="background: var(--bg-secondary); border: 1px solid var(--border); padding: 15px; border-radius: 4px; text-align: center; margin-top: 15px;">
+                    <a href="https://privacybar.net/canary.txt" target="_blank"
+                        style="color: var(--accent); font-weight: bold; text-decoration: none; border: 1px solid var(--accent); padding: 8px 16px; border-radius: 4px; display: inline-block;">
+                        VIEW LIVE WARRANT CANARY
+                    </a>
+                </div>
+
+                <p style="font-size: 0.8rem; color: var(--muted); margin-top: 10px;">
+                    If the statement at the link above ever disappears or fails to update, assume the build
+                    has been subject to legal intervention.
+                </p>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header">Credits & External Resources</div>
+            <div class="accordion-content">
+                <p>Privacy Bar utilizes the following peer-reviewed open-source libraries by other developers. We
+                    encourage users to audit these resources directly:</p>
+                <ul style="list-style: none; padding-left: 0; font-size: 0.85rem;">
+                    <li style="margin-bottom: 12px;">
+                        <strong>1. Tweet NaCl (1.0.3):</strong> Cryptographic primitives. <br>
+                        <a href="https://github.com/dchest/tweetnacl-js" target="_blank"
+                            style="color: var(--accent);">Project Page</a> — Copyright © 2020 Dmitry Chestnykh
+                        (Unlicense).
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>2. ed2curve-js (0.2.1):</strong> Curve coordinate conversion. <br>
+                        <a href="https://github.com/dchest/ed2curve-js" target="_blank"
+                            style="color: var(--accent);">Project Page</a> — Copyright © 2019 Dmitry Chestnykh
+                        (Unlicense).
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>3. scrypt-async-js (2.0.1):</strong> KDF implementation. <br>
+                        <a href="https://github.com/dchest/scrypt-async-js" target="_blank"
+                            style="color: var(--accent);">Project Page</a> — Copyright © 2016 Dmitry Chestnykh (BSD).
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>4. Noble Post-Quantum (0.5.4):</strong> PQ Cryptography. <br>
+                        <a href="https://github.com/paulmillr/noble-post-quantum" target="_blank"
+                            style="color: var(--accent);">Project Page</a> — Copyright © 2026 Paul Miller (MIT).
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>5. lz-string (1.4.5):</strong> Compression algorithm. <br>
+                        <a href="https://github.com/pieroxy/lz-string" target="_blank"
+                            style="color: var(--accent);">Project Page</a> — Copyright © 2023 Pieroxy (MIT).
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>6. DOMPurify (3.3.3):</strong> XSS-sanitizer. <br>
+                        <a href="https://github.com/cure53/DOMPurify" target="_blank"
+                            style="color: var(--accent);">Project Page</a> — Copyright © 2025 Mario Heiderich, Cure53
+                        (Apache 2.0).
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>7. jpeg image steganography:</strong> js-steg implementation. <br>
+                        <a href="https://github.com/owencm/js-steg" target="_blank"
+                            style="color: var(--accent);">Project Page</a> — Copyright © 2013 Owen Campbell-Moore (MIT).
+                    </li>
+                    <li style="margin-bottom: 12px;">
+                        <strong>8. Shamir Secret Sharing:</strong> secrets.js implementation. <br>
+                        <a href="https://github.com/amper5and/secrets.js" target="_blank"
+                            style="color: var(--accent);">Project Page</a> — Copyright © 2017 Alexander Stetsyuk (MIT).
+                    </li>
+                </ul>
+                <p style="font-style: italic; margin-top: 10px; font-size: 0.8rem;">"Standing on the shoulders of giants
+                    to keep the servers at bay."</p>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-header">Copyright & License</div>
+            <div class="accordion-content">
+                <p><strong>Copyright © 2026 Francisco Ruiz. All rights reserved.</strong></p>
+                <p>Permission is granted to use this software via the Chrome Web Store for personal, non-commercial
+                    purposes.</p>
+                <ul>
+                    <li><strong>Audit Rights:</strong> Source code is provided in a readable format for security
+                        auditing and trust. </li>
+                    <li><strong>Restrictions:</strong> "Reading" the code does not constitute a license to copy, modify,
+                        or redistribute the logic.</li>
+                    <li><strong>Prohibition:</strong> You may not redistribute the software or reverse engineer the
+                        licensing logic.</li>
+                </ul>
+                <p style="font-size: 0.8rem; color: var(--muted);">THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+                    ANY KIND. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM OR DAMAGES.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="help.js"></script>
+</body>
+
+</html>

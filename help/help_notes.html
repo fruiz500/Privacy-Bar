@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Privacy Bar - Page Help</title>
+  <link rel="stylesheet" href="help.css">
+</head>
+
+<body>
+  <nav
+    style="background: var(--bg-secondary); padding: 10px; border-radius: 4px; margin-bottom: 20px; font-size: 0.85rem; display: flex; gap: 10px; flex-wrap: wrap;">
+    <a href="help_common.html"
+      style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">COMMON
+      HELP</a>
+    <a href="help_passwords.html"
+      style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">PASSWORDS</a>
+    <a href="help_crypto.html"
+      style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">CRYPTO</a>
+    <a href="help_notes.html"
+      style="color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 4px 8px; border-radius: 4px;">PAGE
+      NOTES</a>
+  </nav>
+
+  <h2>Page Privacy Help</h2>
+
+  <div id="search-container">
+    <input type="text" id="help-search" placeholder="Search (e.g. 'Safe Space', 'notes', 'sanitize')...">
+  </div>
+
+  <div id="help-list">
+
+    <div class="accordion-item">
+      <div class="accordion-header">How the Page Tab Works</div>
+      <div class="accordion-content">
+        The <strong>Page</strong> tab is the default view for most websites. It activates automatically if the page
+        doesn't contain password fields, large text inputs, or encrypted blobs.
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">How to Use Encrypted Page Notes</div>
+      <div class="accordion-content">
+        You can store private notes for specific websites that only appear when you visit that page.
+        <ol>
+          <li>Type your note into the text box.</li>
+          <li>Ensure your <strong>Master Key (MK)</strong> is filled.</li>
+          <li>Click <strong>Save</strong>.</li>
+          <li>The next time you visit, the note decrypts automatically if your MK is filled.</li>
+          <li><strong>Read-Once:</strong> Click <strong>Read-Once</strong> to save a note that will be deleted from
+            storage immediately after it is decrypted and displayed once.</li>
+          <li><strong>Delete:</strong> Click <strong>Delete</strong> and confirm in the popup to remove a saved note.
+          </li>
+        </ol>
+        <em>Note: Saving permanent notes requires a Pro license. Read-once notes can be saved in free mode.</em>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Isolating Pages (Safe Space) <span class="pro-tag">PRO</span></div>
+      <div class="accordion-content">
+        To prevent other browser extensions from "seeing" what you do on a sensitive page:
+        <ol>
+          <li>Click <strong>Send Page to Safe Space</strong>.</li>
+          <li>A new tab opens containing the page inside an isolated frame. Other extensions cannot interact with this
+            frame or log your keystrokes.</li>
+          <li><strong>Warning:</strong> Some high-security sites (like banks) may block this isolation and result in a
+            blank page.</li>
+        </ol>
+        <em>Note: This feature requires a Pro license.</em>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header">Sanitizing Dangerous Pages <span class="pro-tag">PRO</span></div>
+      <div class="accordion-content">
+        If you suspect a page is malicious or contains tracking scripts:
+        <ol>
+          <li>Click <strong>Open Sanitized Page</strong>.</li>
+          <li>A new tab will open with a stripped-down version of the site. All executable code, images, and malicious
+            metadata-stripping content are removed.</li>
+          <li>Most links will still work, but subsequent pages you visit from there are not automatically sanitized.
+          </li>
+        </ol>
+        <em>Note: This feature requires a Pro license.</em>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="help.js"></script>
+</body>
+
+</html>
