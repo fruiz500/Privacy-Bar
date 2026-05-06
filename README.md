@@ -58,7 +58,7 @@ Privacy Bar is part of a broader privacy ecosystem designed for cross-compatibil
 
 ## Acknowledgements
   PassLok contains and/or links to code from a number of open source
-  projects on GitHub, including the Tweet NaCl crypto library, and others.
+  projects on GitHub, including the Tweet NaCl crypto library, and others. See [CREDITS.txt](CREDITS.txt)
 
 ---
 
