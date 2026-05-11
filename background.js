@@ -192,3 +192,17 @@ chrome.action.onClicked.addListener((tab) => {
     chrome.sidePanel.open({ tabId }).catch(err => console.error("Gesture Error:", err));
   });
 });
+
+/**
+ * THE REAPER: Wipes the Master Key from session storage when the alarm fires.
+ * This ensures the session is killed even if the sidepanel is closed.
+ */
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "SPAlarm") {
+    chrome.storage.session.remove("masterPwd", () => {
+      console.log("Privacy Bar: Security Timeout. Master Key wiped from session.");
+      // Optional: Notify the sidepanel to refresh the UI if it's open
+      chrome.runtime.sendMessage({ action: "SESSION_WIPED" });
+    });
+  }
+});

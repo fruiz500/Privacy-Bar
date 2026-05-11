@@ -103,6 +103,28 @@ if (typeof window.PB_AGENT_LOADED === 'undefined') {
     return false;
   }
 
+  // ---- Identity Injection Helpers ----
+  function findUserIdField() {
+    const selectors = [
+      'input[autocomplete="username"]',
+      'input[autocomplete="email"]',
+      'input[type="email"]',
+      'input[name*="user" i]',
+      'input[name*="login" i]',
+      'input[id*="user" i]',
+      'input[id*="login" i]'
+    ];
+
+    for (const selector of selectors) {
+      const el = document.querySelector(selector);
+      if (el && el.offsetParent !== null) return el;
+    }
+
+    // Fallback: first visible text input that isn't a search box
+    return Array.from(document.querySelectorAll("input[type='text']"))
+      .find(el => el.offsetParent !== null && !el.name.match(/search|q/i));
+  }
+
   // ---- Message Listener ----
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (!chrome.runtime?.id) return;
@@ -135,6 +157,18 @@ if (typeof window.PB_AGENT_LOADED === 'undefined') {
       const target = autoTargetInput || document.activeElement;
       if (target && (target.tagName === 'TEXTAREA' || target.isContentEditable)) {
         insertTextAtTarget(target, request.text);
+        sendResponse({ success: true });
+      } else {
+        sendResponse({ success: false });
+      }
+      return true;
+    }
+
+    if (request.type === "FILL_IDENTITY") {
+      const idField = findUserIdField();
+      if (idField && request.userID) {
+        idField.value = request.userID;
+        ['input', 'change', 'blur'].forEach(ev => idField.dispatchEvent(new Event(ev, { bubbles: true })));
         sendResponse({ success: true });
       } else {
         sendResponse({ success: false });

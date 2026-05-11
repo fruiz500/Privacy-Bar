@@ -91,6 +91,8 @@
 
     <!-- Synth Mode Inputs -->
     <div id="synth-extra-inputs" class="hidden">
+      <label for="user-id">User ID</label>
+      <input type="text" id="user-id" placeholder="your@email.com?" style="width: 90%; margin-bottom: 8px;">
       <label for="serial">Serial</label>
       <input type="text" id="serial" placeholder="Serial">
 
@@ -230,14 +232,14 @@
     <div class="toolbar-row">
       <select id="mode-select" class="mode-dropdown" title="Select encryption mode">
         <optgroup label="Standard (ECC)">
-          <option value="signed" selected>Signed</option>
-          <option value="anon">Anonymous</option>
+          <option value="anon" selected>Anonymous</option>
+          <option value="signed">Signed</option>
           <option value="readonce" id="pro-readOnce">Read-once</option>
           <option value="certified" id="pro-certified">Certified (not encrypted)</option>
         </optgroup>
         <optgroup label="Quantum-Proof (KEM)">
-          <option value="pq-signed" id="pro-pqSigned">PQ Signed</option>
           <option value="pq-anon" id="pro-pqAnon">PQ Anonymous</option>
+          <option value="pq-signed" id="pro-pqSigned">PQ Signed</option>
         </optgroup>
       </select>
 
