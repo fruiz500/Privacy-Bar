@@ -613,7 +613,7 @@ function randPerm(n) {
 	result[0] = 0;
 
 	for (var i = 1; i < n; ++i) {
-		var idx = (SeededPRNG.random() * (i + 1)) | 0;			//here is the call to the isaac PRNG library, floating point version
+		var idx = (SeededPRNG.random() * (i + 1)) | 0;			//here is the call to the PRNG library, floating point version
 		if (idx < i) {
 			result[i] = result[idx]
 		}
@@ -628,12 +628,9 @@ function addNoise(byteArray) {
 		let noisyByte = 0;
 		for (let bit = 0; bit < 8; bit++) {
 			// Generate a random bit (0 or 1)
-			const randBit = SeededPRNG.rand() >= 0 ? 1 : 0;
-			// Extract the bit from the original byte
+			const randBit = SeededPRNG.rand(); 
 			const originalBit = (byteArray[i] >> (7 - bit)) & 1;
-			// XOR original bit with random bit
 			const newBit = originalBit ^ randBit;
-			// Set the new bit in the noisyByte
 			noisyByte |= (newBit << (7 - bit));
 		}
 		byteArray[i] = noisyByte;

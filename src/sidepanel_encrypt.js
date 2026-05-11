@@ -335,8 +335,13 @@ async function finalizeAndInject(result) {
     }
   }
 
+  // --- INJECTION LOGIC ---
   const wrapped = (lockPrefix + ciphertextB64).match(/.{1,80}/g).join("\n");
-  let fullBlock = `<pre>\n----BEGIN PRIVACY BAR ${modeLabel} MESSAGE----==\n${wrapped}\n==----END PRIVACY BAR ${modeLabel} MESSAGE----\n</pre>`;
+
+  // Logic to dynamically adjust armor based on lock presence
+  const armorLabel = lockPrefix ? `${modeLabel} MESSAGE WITH LOCK` : `${modeLabel} MESSAGE`;
+
+  let fullBlock = `<pre>\n----BEGIN PRIVACY BAR ${armorLabel}----==\n${wrapped}\n==----END PRIVACY BAR ${armorLabel}----\n</pre>`;
 
   if (modeLabel === "INVITATION") {
     // Add your onboarding text here!
@@ -426,92 +431,101 @@ async function decoyEncrypt(plaintext) {
  * Standardizes the "Unified" header for file outputs while keeping 
  * UI-to-UI paths naked.
  */
-async function processFileEncryption(fileBlob, outName) {
+async function processFileEncryption(fileBlob, outName, targetMode = null) {
   try {
-    const lockList = document.getElementById('lockList');
-    const decoyToggle = document.getElementById('hidden-msg-check');
+    const state = getEncryptionState();
     const decoyArea = document.getElementById('decoyMessageArea');
 
-    // --- 1. MODE DETECTION ---
-    const modeSelect = document.getElementById('mode-select');
-    const currentUIValue = modeSelect ? modeSelect.value : '';
-    const isCertifiedMode = (currentUIValue === 'certified');
+    // 1. Determine Mode: Use the passed targetMode if available, otherwise fallback to UI
+    let mode = targetMode;
+    if (mode === null) {
+      mode = 72;
+      if (state.mode === 'anon') mode = 0;
+      if (state.mode === 'pq-anon') mode = 1;
+      if (state.mode === 'pq-signed') mode = 73;
+      if (state.mode === 'readonce') mode = 56;
+      if (state.mode === 'certified') mode = 150;
+      if (state.mode === 'folder' || state.mode === 'symmetric') mode = 128;
+    }
 
-    // --- 2. UNIVERSAL WRAPPING ---
-    const internalName = outName.toLowerCase().endsWith('.pbx')
-      ? outName.slice(0, -4)
-      : outName;
-
-    let finalBin;
+    const isCertifiedMode = (mode === 150);
+    const internalName = outName.toLowerCase().endsWith('.pbx') ? outName.slice(0, -4) : outName;
     let finalOutName = outName.toLowerCase().endsWith('.pbx') ? outName : outName + '.pbx';
+    let finalBin;
+
+    // 2. Aggressive Recipient Capture
+    // We check the state first, then the DOM as a backup
+    let recipients = state.recipients || [];
+    if (recipients.length === 0) {
+      const lockList = document.getElementById('lockList');
+      if (lockList && lockList.selectedOptions) {
+        recipients = Array.from(lockList.selectedOptions).map(o => o.value.trim()).filter(s => s);
+      }
+    }
+
+    // AUTO-SWITCH: If no recipients found, force Symmetric mode to prevent coreEncrypt confusion
+    if (recipients.length === 0 && mode !== 0 && mode !== 1) {
+      mode = 128;
+    }
 
     // --- BRANCH A: CERTIFICATION ---
     if (isCertifiedMode) {
       const fileUint8 = new Uint8Array(await fileBlob.arrayBuffer());
       const unifiedBytes = prepareUnifiedPlaintext(fileUint8, internalName);
 
-      // FIX: Wrap in Blob to trigger Chained Hashing logic
       const result = await encryptCertifiedMode(new Blob([unifiedBytes]), {
         masterPwd: document.getElementById('m-pass')?.value.trim(),
         myEmail: document.getElementById("user-email")?.value.trim(),
-        decoyText: (decoyToggle && decoyToggle.checked) ? decoyArea.value.trim() : ""
+        decoyText: state.useHidden ? decoyArea.value.trim() : ""
       });
 
       if (!result) return;
       finalBin = result.finalBin;
     }
 
-    // --- BRANCH B: ENCRYPTION (Signed/Once/Anon/PQ) ---
+    // --- BRANCH B: ENCRYPTION ---
     else {
-      let mode = 72;
-      if (currentUIValue === 'anon') mode = 0;
-      if (currentUIValue === 'pq-anon') mode = 1;
-      if (currentUIValue === 'pq-signed') mode = 73;
-      if (currentUIValue === 'readonce') mode = 56;
-
       const masterPwd = document.getElementById('m-pass')?.value.trim();
       const myEmail = document.getElementById("user-email")?.value.trim() || "";
       const isStandardMode = !window.activePadBin && !window.activeFolderKey;
 
-      if (isStandardMode && mode !== 0 && mode !== 1) {
+      // Identity Guard
+      if (isStandardMode && mode !== 0 && mode !== 1 && mode !== 128) {
         if (!masterPwd) {
           showStatusMsg("Master Key required.", "bad");
           document.getElementById('m-pass').focus();
           return;
         }
-        else {
-          showStatusMsg('<span class="pb-stretching">Stretching Key...</span>', 'info');
-          await new Promise(r => setTimeout(r, 50));
-        }
         if (!myEmail) {
-          showStatusMsg("Email required in Decrypt card for key derivation.", "special");
+          showStatusMsg("Email required for key derivation.", "special");
           document.getElementById("user-email")?.focus();
           return;
         }
       }
 
+      // Metadata Wrapping (Type 2+)
+      const fileUint8 = new Uint8Array(await fileBlob.arrayBuffer());
+      const wrappedPayload = prepareUnifiedPlaintext(fileUint8, internalName);
+
       const settings = {
-        selectedRecipients: Array.from(lockList.selectedOptions).map(o => o.value.trim()).filter(s => s),
+        selectedRecipients: recipients, // Use our verified list
         mode: mode,
         masterPwd: masterPwd,
         myEmail: myEmail,
         activeFolderKey: window.activeFolderKey,
-        decoyText: (decoyToggle && decoyToggle.checked) ? decoyArea.value.trim() : "",
-        fileName: internalName // Metadata is passed here for the first chunk
+        decoyText: state.useHidden ? decoyArea.value.trim() : "",
+        fileName: null
       };
 
-      // Call coreEncrypt with the Blob
-      const result = await coreEncrypt(fileBlob, settings);
+      const result = await coreEncrypt(wrappedPayload, settings);
       if (!result || !result.finalBin) return;
 
       finalBin = result.finalBin;
     }
 
-    // --- 3. SHARED OUTPUT PIPELINE (Stego or Download) ---
+    // --- 3. OUTPUT ---
     const imgPreview = document.getElementById('stego-image-preview');
-
     if (imgPreview && imgPreview.src && imgPreview.src.length > 10) {
-      // If result is a Blob, we convert for the stego tool which expects Uint8Array
       const stegoBin = (finalBin instanceof Blob) ? new Uint8Array(await finalBin.arrayBuffer()) : finalBin;
       await attachBlobToImage(stegoBin);
       showStatusMsg("Encrypted file attached to image!", "good");
@@ -520,13 +534,7 @@ async function processFileEncryption(fileBlob, outName) {
       showStatusMsg(`Encrypted file saved: ${finalOutName}`, "good");
     }
 
-    // Cleanup UI
-    if (decoyArea) {
-      decoyArea.value = "";
-      const count = document.getElementById('decoyByteCount');
-      if (count) count.textContent = "0";
-    }
-
+    if (decoyArea) decoyArea.value = "";
     if (typeof startMasterPwdTimeout === "function") startMasterPwdTimeout();
     return true;
 
@@ -598,8 +606,22 @@ async function encryptPadMode(msgUint8, settings) {
   const nonce15 = nacl.randomBytes(15);
   const padding = (settings.decoyText?.trim()) ? await decoyEncrypt(settings.decoyText) : nacl.randomBytes(100);
 
-  const seedInput = concatUi8([nonce15, pad]);
-  const seedHash = await sha512Uint8(seedInput);
+  let seedHash;
+  if (window.activePadBin instanceof Blob) {
+    const p = window.activePadBin;
+    const size = p.size;
+    const sampleSize = 256 * 1024; // 256KB per sample
+
+    // Sample from Start, Middle, and End
+    const start = new Uint8Array(await p.slice(0, sampleSize).arrayBuffer());
+    const mid = new Uint8Array(await p.slice(Math.floor(size / 2), Math.floor(size / 2) + sampleSize).arrayBuffer());
+    const end = new Uint8Array(await p.slice(size - sampleSize, size).arrayBuffer());
+
+    seedHash = await sha512Uint8(concatUi8([nonce15, start, mid, end]));
+  } else {
+    seedHash = await sha512Uint8(concatUi8([nonce15, window.activePadBin]));
+  }
+
   let start64 = 0n;
   for (let i = 0; i < 8; i++) start64 = (start64 << 8n) | BigInt(seedHash[i]);
   let padCursor = Number(start64 % BigInt(pad.length || 1));
@@ -948,7 +970,6 @@ async function encryptToFile() {
   const mainBox = document.getElementById('mainBox');
   const decoyArea = document.getElementById('decoyMessageArea');
   const state = getEncryptionState();
-  const rawHTML = mainBox.innerHTML.trim();
 
   let isFolderKey = false;
   let mode = 72;
@@ -962,17 +983,20 @@ async function encryptToFile() {
 
   try {
     let msgUint8;
-    if (!rawHTML || rawHTML === "Type or decrypt here..." || rawHTML === "Select an item to view...") {
+    // --- PAYLOAD UNIFICATION ---
+    const unifiedResult = await getUnifiedPayload();
+
+    if (!unifiedResult) {
       const promptMsg = window.activeFolderKey
         ? "Compose box is empty. Encrypt the ACTIVE Folder Key to this file?"
         : "Compose box is empty. Generate and encrypt a NEW random Folder Key?";
 
       if (!confirm(promptMsg)) return;
-      msgUint8 = window.activeFolderKey || nacl.randomBytes(32);
+      const rawKey = window.activeFolderKey || nacl.randomBytes(32);
+      msgUint8 = prepareUnifiedPlaintext(rawKey, "RAW_BINARY");
       isFolderKey = true;
     } else {
-      const compressed = LZString.compressToUint8Array(rawHTML);
-      msgUint8 = prepareUnifiedPlaintext(compressed);
+      msgUint8 = unifiedResult;
     }
 
     const settings = {
@@ -1047,20 +1071,58 @@ async function encryptToFile() {
  */
 function prepareUnifiedPlaintext(dataUint8, fileName = null) {
   if (!fileName) {
-    // CASE 2: UI-to-File (HTML Text) -> [0][Compressed Data]
+    // 0x00: Standard Text/HTML
     const payload = new Uint8Array(1 + dataUint8.length);
     payload[0] = 0;
     payload.set(dataUint8, 1);
     return payload;
+  } else if (fileName === "RAW_BINARY") {
+    // 0x01: Binary Blob (Folder Keys or Armored Base64)
+    const payload = new Uint8Array(1 + dataUint8.length);
+    payload[0] = 1;
+    payload.set(dataUint8, 1);
+    return payload;
   } else {
-    // CASE 3: File-to-File -> [NameLen][Filename][Raw Data]
+    // 0x02+: Named Files (Marker is the length of the name)
     const nameBytes = new TextEncoder().encode(fileName);
     const nameLen = Math.min(nameBytes.length, 255);
-
     const payload = new Uint8Array(1 + nameLen + dataUint8.length);
     payload[0] = nameLen;
     payload.set(nameBytes.subarray(0, nameLen), 1);
     payload.set(dataUint8, 1 + nameLen);
     return payload;
   }
+}
+
+async function getUnifiedPayload() {
+  const mainBox = document.getElementById('mainBox');
+  if (!mainBox) return null;
+
+  // --- CASE A: File Link (Anchor Tag) ---
+  const link = mainBox.querySelector('a');
+  if (link && (link.href.startsWith('data:') || link.href.startsWith('blob:'))) {
+    try {
+      const response = await fetch(link.href);
+      const fileData = new Uint8Array(await response.arrayBuffer());
+      return prepareUnifiedPlaintext(fileData, link.download || "attachment.bin");
+    } catch (e) { console.error("Blob fetch failed", e); }
+  }
+
+  // --- CASE B: Encrypted/Certified String (Base64) ---
+  const rawText = mainBox.innerText || mainBox.textContent;
+  const cleanedB64 = cleanBase64(rawText);
+  if (cleanedB64.length > 32) {
+    try {
+      const rawBytes = decodeBase64(cleanedB64);
+      return prepareUnifiedPlaintext(rawBytes, "RAW_BINARY");
+    } catch (e) { /* Fall through to Text if invalid */ }
+  }
+
+  // --- CASE C: Standard Text/HTML ---
+  const rawHTML = mainBox.innerHTML.trim();
+  if (!rawHTML || rawHTML === "Type or decrypt here..." || rawHTML === "Select an item to view...") {
+    return null; // Signals empty box for Folder Key logic
+  }
+  const compressed = LZString.compressToUint8Array(rawHTML);
+  return prepareUnifiedPlaintext(compressed);
 }

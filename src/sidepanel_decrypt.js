@@ -332,8 +332,22 @@ async function handlePadMode(input) {
     if (!window.activePadBin) throw new Error("Pad file missing.");
     const pad = window.activePadBin;
 
-    const seedInput = concatUi8([nonce15, pad]);
-    const seedHash = await sha512Uint8(seedInput);
+    let seedHash;
+    if (window.activePadBin instanceof Blob) {
+      const p = window.activePadBin;
+      const size = p.size;
+      const sampleSize = 256 * 1024; // 256KB per sample
+
+      // Sample from Start, Middle, and End
+      const start = new Uint8Array(await p.slice(0, sampleSize).arrayBuffer());
+      const mid = new Uint8Array(await p.slice(Math.floor(size / 2), Math.floor(size / 2) + sampleSize).arrayBuffer());
+      const end = new Uint8Array(await p.slice(size - sampleSize, size).arrayBuffer());
+
+      seedHash = await sha512Uint8(concatUi8([nonce15, start, mid, end]));
+    } else {
+      seedHash = await sha512Uint8(concatUi8([nonce15, window.activePadBin]));
+    }
+
     let start64 = 0n;
     for (let i = 0; i < 8; i++) start64 = (start64 << 8n) | BigInt(seedHash[i]);
     const startIndex = Number(start64 % BigInt(pad.length || 1));
@@ -592,7 +606,7 @@ async function handleSignedMode(cipherInput, parsed, commonData) {
       } catch (e) { continue; }
     }
 
-    throw new Error("This message was not encrypted for you");
+    throw new Error("Identity match failed. This message was either not intended for you, or the sender's Lock is missing from your directory.");
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -770,11 +784,11 @@ async function tryReadOnceDecrypt(senderName, matchedData, idKey, nonce24, paddi
   else { // NORMAL (Marker 160)
     const lastKey = lastKeyCipher ? keyDecrypt(lastKeyCipher, storageKey, true) : null;
     if (!lastKey) return { success: false, error: "Sync error: Missing ephemeral key." };
-    
+
     // CRITICAL: We MUST have a stored lock. No fallback to newLockBin.
     const lastLock = lastLockCipher ? keyDecrypt(lastLockCipher, storageKey, true) : null;
     if (!lastLock) return { success: false, error: "Sync error: Missing ephemeral lock." };
-    
+
     sharedKey = nacl.box.before(lastLock, lastKey);
   }
 
@@ -785,7 +799,7 @@ async function tryReadOnceDecrypt(senderName, matchedData, idKey, nonce24, paddi
   // Overwrite the previous lock with the one sent in this message.
   // This invalidates the current ciphertext for any future decryption attempts.
   entry.ro.lastlock = keyEncrypt(newLockBin, storageKey);
-  
+
   // Transition Bob to 'lock' so he is ready to reply.
   entry.ro.turn = 'lock';
 
@@ -1242,8 +1256,8 @@ async function processFileDecryption(fileBlob, outName) {
     if (!result || !result.success) return false;
 
     // 2. Normalize Output: Ensure decryptedBlob is a Blob to support .arrayBuffer()
-    const decryptedBlob = (result.plaintext instanceof Uint8Array) 
-      ? new Blob([result.plaintext]) 
+    const decryptedBlob = (result.plaintext instanceof Uint8Array)
+      ? new Blob([result.plaintext])
       : result.plaintext;
 
     const peekBuf = new Uint8Array(await decryptedBlob.slice(0, 300).arrayBuffer());
@@ -1257,11 +1271,11 @@ async function processFileDecryption(fileBlob, outName) {
       return true;
     }
 
-    // 4. Metadata Parsing
+    // 4. Metadata Parsing (Unified 0, 1, 2+ Logic)
     const nameLen = peekBuf[0];
 
     if (nameLen === 0) {
-      // CASE: Text-to-File (Marker 0 + Compressed HTML)
+      // CASE 0: Text-to-File (Compressed HTML)
       const compressedPayload = new Uint8Array(await decryptedBlob.slice(1).arrayBuffer());
       const html = LZString.decompressFromUint8Array(compressedPayload);
 
@@ -1270,10 +1284,25 @@ async function processFileDecryption(fileBlob, outName) {
         setCryptoMode("decrypt");
         showStatusMsg(`Decrypted message from ${result.senderName || 'Sender'}`, "good");
       } else {
+        // Fallback if decompression fails
         triggerDownload(new Blob([compressedPayload]), outName);
       }
-    } else {
-      // CASE: File-to-File (NameLen + Filename + Data)
+    }
+    else if (nameLen === 1) {
+      // CASE 1: Binary Blob / Stripped Base64 (No Name)
+      // Mirroring LSB Extraction logic exactly
+      const rawBytes = new Uint8Array(await decryptedBlob.slice(1).arrayBuffer());
+      const b64 = encodeBase64(rawBytes);
+      const wrapped = b64.match(/.{1,80}/g).join("\n");
+
+      const mainBox = document.getElementById('mainBox');
+      mainBox.innerHTML = `<pre>----BEGIN PRIVACY BAR MESSAGE----==\n${wrapped}\n==----END PRIVACY BAR MESSAGE----</pre>`;
+
+      setCryptoMode("decrypt");
+      showStatusMsg("Encrypted message extracted. Use 'Decrypt' to read.", "good");
+    }
+    else {
+      // CASE 2+: Named File (NameLen + Filename + Data)
       const metadataEnd = 1 + nameLen;
       const parsedName = new TextDecoder().decode(peekBuf.subarray(1, metadataEnd));
       const payloadBlob = decryptedBlob.slice(metadataEnd);

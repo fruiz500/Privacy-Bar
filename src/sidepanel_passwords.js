@@ -60,12 +60,15 @@ document.getElementById("do-synth").addEventListener("click", async () => {
     await new Promise(r => setTimeout(r, 50));
   }
 
+  // 1. Trigger identity injection
+  fillIdentityOnPage();
+
   const synthesized = await getSynthesizedPassword();
 
-  // 1. Save data (now silent)
+  // 2. Save data (now includes identity)
   saveHostData(host);
 
-  // 2. Fill the page
+  // 3. Fill the page
   fillPasswordOnPage(synthesized);
 
   // 3. Set the correct status message
@@ -192,6 +195,19 @@ async function fillPasswordOnPage(password) {
   });
 }
 
+/**
+ * Sends the stored User ID to the content script for injection.
+ */
+async function fillIdentityOnPage() {
+  const userID = document.getElementById("user-id").value.trim();
+  if (!userID) return;
+
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab) return;
+
+  chrome.tabs.sendMessage(tab.id, { type: "FILL_IDENTITY", userID });
+}
+
 // ===== VAULT PASSWORD MANAGEMENT =====
 
 async function getVaultPwd(host) {
@@ -256,6 +272,7 @@ async function handleVaultOptions(ciphertext, host) {
         "Use stored password? (OK=use, Cancel=change/delete)",
       );
       if (action) {
+        fillIdentityOnPage();
         fillPasswordOnPage(decrypted);
       } else {
         showVaultPrompt(host); // User can change or DELETE

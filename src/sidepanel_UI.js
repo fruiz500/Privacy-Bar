@@ -256,6 +256,18 @@ async function updateUI(state) {
   if (state) lastState = state;
   const s = lastState;
 
+  // Restore MK from session if it exists
+  chrome.storage.session.get("masterPwd", (res) => {
+    if (res.masterPwd) {
+      const mpInput = document.getElementById("m-pass");
+      // If a cached key exists but the field is empty (e.g. on reload), restore it
+      if (mpInput && !mpInput.value) {
+        mpInput.value = res.masterPwd;
+        startMasterPwdTimeout(); // Resume the heartbeat
+      }
+    }
+  });
+
   // 1. Synchronous Context Acquisition [cite: 2026-03-30]
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const currentTabId = tab?.id;
@@ -324,8 +336,8 @@ function updateSynthUI(synthData) {
   const serial = document.getElementById("serial");
   const allowed = document.getElementById("allowed-chars");
   const limit = document.getElementById("length-limit");
+  const userId = document.getElementById("user-id"); // The new field
 
-  // Prevent background scans from overwriting active user input [cite: 2026-03-28]
   if (serial && document.activeElement !== serial) {
     serial.value = synthData.serial || "";
   }
@@ -334,6 +346,10 @@ function updateSynthUI(synthData) {
   }
   if (limit && document.activeElement !== limit) {
     limit.value = synthData.lengthLimit || "";
+  }
+  // Populate the User ID
+  if (userId && document.activeElement !== userId) {
+    userId.value = synthData.userID || "";
   }
 }
 
@@ -395,27 +411,31 @@ function updateRecipientStatus() {
   }
 }
 
-function saveHostData(host) {
+/**
+ * Unified Saver: Pulls identity from the Synthesis tab and manages the vault.
+ */
+function saveHostData(host, newVaultCipher = undefined) {
   if (!host) return;
-  const serial = document.getElementById("serial").value;
-  const allowedChars = document.getElementById("allowed-chars").value;
-  const lengthLimit = document.getElementById("length-limit").value;
 
-  chrome.storage.sync.get([host], (result) => {
-    const hostData = result[host] || {};
-    const updatedData = {
-      ...hostData,
-      synth: {
-        serial: serial,
-        allowedChars: allowedChars,
-        lengthLimit: lengthLimit,
-      },
-    };
+  chrome.storage.sync.get(host, (data) => {
+    const item = data[host] || {};
+    const synth = item.synth || {};
 
-    chrome.storage.sync.set({ [host]: updatedData }, () => {
-      if (chrome.runtime.lastError) {
-        console.error("Save error:", chrome.runtime.lastError);
-      }
+    // Pulls from the Synthesis tab ID #user-id
+    synth.userID = document.getElementById("user-id").value.trim();
+    synth.serial = document.getElementById("serial").value.trim();
+    synth.allowedChars = document.getElementById("allowed-chars").value.trim();
+    synth.lengthLimit = document.getElementById("length-limit").value.trim();
+
+    item.synth = synth;
+
+    if (newVaultCipher !== undefined) {
+      item.crypt = item.crypt || {};
+      item.crypt.pwd = newVaultCipher;
+    }
+
+    chrome.storage.sync.set({ [host]: item }, () => {
+      updateVaultStatus();
     });
   });
 }
@@ -623,6 +643,17 @@ chrome.runtime.onMessage.addListener((request) => {
     updateUI(request.state);
   }
 
+  if (request.action === "SESSION_WIPED") {
+    const pwdInput = document.getElementById('m-pass');
+    if (pwdInput) {
+      pwdInput.value = "";
+      unlockMasterPassword();
+      document.getElementById('strength-fill').style.width = '0%';
+      document.getElementById('hashili').textContent = '';
+      showStatusMsg("Session timed out. Keys cleared.", "special");
+    }
+  }
+
   if (request.type === "LOAD_STEGO_IMAGE") {
     const preview = document.getElementById('stego-image-preview');
     const placeholder = document.getElementById('stego-placeholder');
@@ -726,31 +757,22 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 });
 
 // ===== Master Key TIMEOUT (5 minutes) =====
-let pwdTimeoutTimer = null;
 
+/**
+ * RE-ENGINEERED: Unified Security Heartbeat.
+ * Sets the global MK session and triggers the background alarm.
+ */
 function startMasterPwdTimeout() {
-  if (typeof pwdTimeoutTimer !== 'undefined' && pwdTimeoutTimer) {
-    clearTimeout(pwdTimeoutTimer);
-  }
+  const mpInput = document.getElementById('m-pass');
+  const masterPwd = mpInput?.value.trim();
 
-  pwdTimeoutTimer = setTimeout(() => {
-    // Clear sensitive globals
-    window.activeFolderKey = null;
-    window.lastDecryptedPadding = null;
+  if (!masterPwd) return;
 
-    const pwdInput = document.getElementById('m-pass');
-    if (pwdInput) pwdInput.value = "";
-    unlockMasterPassword();
-    document.getElementById('strength-fill').style.width = '0%';
-    document.getElementById('hashili').textContent = '';
+  // 1. Sync MK to session storage for "Everything" (Synth, Crypto, Notes)
+  chrome.storage.session.set({ "masterPwd": masterPwd });
 
-    const folderIndicator = document.getElementById('folder-active-indicator');
-    if (folderIndicator) folderIndicator.style.display = 'none';
-
-    showStatusMsg("Session timed out. Keys cleared.", "special");
-
-    console.log("Inactivity timeout: Sensitive data wiped.");
-  }, 5 * 60 * 1000);
+  // 2. Set/Reset the background security alarm (5-minute window)
+  chrome.alarms.create("SPAlarm", { delayInMinutes: 5 });
 }
 
 // Reset the timeout on any meaningful UI interaction
@@ -761,6 +783,27 @@ function startMasterPwdTimeout() {
     }
   }, { passive: true });
 });
+
+/**
+ * Caches the Master Key in session storage and secures the UI.
+ */
+function cacheMasterKey(masterPwd) {
+  if (!masterPwd) return;
+
+  // 1. Persist to session storage for the browser session
+  chrome.storage.session.set({ "masterPwd": masterPwd });
+  
+  // 2. Trigger the timeout/wipe alarm
+  chrome.alarms.create("SPAlarm", { delayInMinutes: 5 });
+
+  // 3. Secure the UI input field
+  const mpInput = document.getElementById("m-pass");
+  if (mpInput) {
+    mpInput.type = "password";
+    const toggleIcon = document.getElementById("toggle-mpass");
+    if (toggleIcon) toggleIcon.style.visibility = 'hidden';
+  }
+}
 
 // === TOOLBAR WIRING ===
 
@@ -1374,8 +1417,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } else {
           // --- MODE: PAD KEY (Original Behavior) ---
-          const arrayBuffer = await readFileAsArrayBuffer(file);
-          window.activePadBin = new Uint8Array(arrayBuffer);
+//          const arrayBuffer = await readFileAsArrayBuffer(file);
+//          window.activePadBin = new Uint8Array(arrayBuffer);
+          window.activePadBin = file;
 
           // UI Feedback
           const indicator = document.getElementById('pad-active-indicator');

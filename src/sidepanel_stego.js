@@ -122,7 +122,8 @@ async function handleStegoEncode(isPng, directPayload = null) {
     }
 
     // 1. Get the payload: Use the dropped file OR scrape the mainBox
-    const payload = directPayload || await getLSBPayload();
+//    const payload = directPayload || await getLSBPayload();
+    const payload = directPayload || await getUnifiedPayload();
 
     if (!payload || payload.length === 0) {
         showStatusMsg("Nothing to embed.", "special");
@@ -256,13 +257,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     showStatusMsg("Text extracted.", "good");
                 }
                 else if (typeByte === 1) {
-                    // 0x01: Encrypted Base64 Blob
+                    // 0x01: Encrypted Base64 Blob (Case B)
+                    // Standardized Armor for the Decrypt button
                     const b64 = encodeBase64(payload);
                     const wrapped = b64.match(/.{1,80}/g).join("\n");
                     mainBox.innerHTML = `<pre>----BEGIN PRIVACY BAR MESSAGE----==\n${wrapped}\n==----END PRIVACY BAR MESSAGE----</pre>`;
                     showStatusMsg("Extraction successful. Use 'Decrypt' to read.", "good");
                 }
-                else if (typeByte > 1 && typeByte <= 255) {
+                else if (typeByte > 1) {
                     // CASE (A): File with Filename [Len][Name][Data]
                     // Note: 'data' is the full Uint8Array, 'typeByte' is the first byte (Length)
                     try {
@@ -356,43 +358,6 @@ function cleanBase64(text) {
     }
 
     return ""; // Not a recognizable binary-in-string format
-}
-
-async function getLSBPayload() {
-    const mainBox = document.getElementById('mainBox');
-    if (!mainBox) return null;
-
-    // --- CASE (A): File Link ---
-    const link = mainBox.querySelector('a');
-    if (link && (link.href.startsWith('data:') || link.href.startsWith('blob:'))) {
-        try {
-            const response = await fetch(link.href);
-            const fileData = new Uint8Array(await response.arrayBuffer());
-            return prepareUnifiedPlaintext(fileData, link.download || "attachment.bin");
-        } catch (e) { console.error("Blob fetch failed", e); }
-    }
-
-    // --- CASE (B): Encrypted/Certified String ---
-    const rawText = mainBox.innerText || mainBox.textContent;
-    const cleanedB64 = cleanBase64(rawText);
-
-    if (cleanedB64.length > 32) {
-        try {
-            const rawBytes = decodeBase64(cleanedB64);
-            const payload = new Uint8Array(1 + rawBytes.length);
-            payload[0] = 1; // Marker [1] for "Direct B64"
-            payload.set(rawBytes, 1);
-            return payload;
-        } catch (e) { /* Invalid B64, fall through */ }
-    }
-
-    // --- CASE (C): Standard Text/HTML ---
-    const rawHTML = mainBox.innerHTML.trim();
-    const compressed = LZString.compressToUint8Array(rawHTML);
-    const payload = new Uint8Array(1 + compressed.length);
-    payload[0] = 0; // Marker [0] for "LZ HTML"
-    payload.set(compressed, 1);
-    return payload;
 }
 
 function isLSBPayloadTooLarge(payloadUint8) {
@@ -523,7 +488,6 @@ function findSequence(data, seq) {
 }
 
 async function checkImageForStowaway(file, fileName) {
-    // 1. Efficiently find the EOF marker in the first 5MB
     const scanLimit = Math.min(file.size, 5 * 1024 * 1024);
     const headBuf = await file.slice(0, scanLimit).arrayBuffer();
     const headBytes = new Uint8Array(headBuf);
@@ -537,28 +501,36 @@ async function checkImageForStowaway(file, fileName) {
         if (jpgIdx !== -1) eofIndex = jpgIdx + JPG_EOF.length;
     }
 
-    // No appended data found (8 bytes is minimum for a PBX header)
+    // No appended data found or too small to be ours
     if (eofIndex === -1 || eofIndex >= file.size - 8) return false;
 
-    // 2. Extract and fix the XOR "Taint" on the first 4 bytes
+    // 2. Extract and peek at the header to validate
     const stowHeaderBlob = file.slice(eofIndex, eofIndex + 4);
     const stowHeader = new Uint8Array(await stowHeaderBlob.arrayBuffer());
 
-    // Reverse the obfuscation: Byte0 = Byte0 ^ Byte2
+    // Reverse the XOR "Taint" to see the real marker
     if (stowHeader.length >= 4) {
         stowHeader[0] = stowHeader[0] ^ stowHeader[2];
         stowHeader[1] = stowHeader[1] ^ stowHeader[3];
     }
 
-    // 3. Reconstruct as a Blob to support chunked decryption and metadata peeking
+    // --- VALIDATION GATE ---
+    // Only proceed if the first byte matches a known Privacy Bar encryption mode
+    const knownMarkers = [0, 1, 56, 72, 73, 128, 150, 164];
+    if (!knownMarkers.includes(stowHeader[0])) {
+        console.log("Trailing data detected but no valid PB marker found. Likely a watermark/metadata.");
+        return false; 
+    }
+
+    // 3. It passed the test! Reconstruct as a Blob
     const stowawayBlob = new Blob([
         stowHeader,
         file.slice(eofIndex + 4)
     ]);
 
-    console.log("Camo/Stowaway detected. Extracted size:", stowawayBlob.size);
+    console.log("Camo/Stowaway verified. Extracted size:", stowawayBlob.size);
 
-    // 4. Hand-off the Blob to the decrypter
+    // 4. Hand-off to the decrypter
     await processFileDecryption(stowawayBlob, fileName + ".dec");
     return true;
 }

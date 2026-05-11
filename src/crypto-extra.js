@@ -253,15 +253,21 @@ function calculateOptimalChunkSize(entropyScore) {
 }
 
 async function findPadChunk(pad, startIndex, targetEntropyBits, options = {}) {
-  const step = options.step || 64; // step size in bytes
-  const padLen = pad.length;
+  const step = options.step || 64;
+  const isBlob = (pad instanceof Blob);
+  const padLen = isBlob ? pad.size : pad.length;
   let s = ((startIndex % padLen) + padLen) % padLen;
 
   let winSize = step;
-  while (winSize <= padLen && winSize <= 65536) { // cap at 64KB
-    const windowBytes = new Uint8Array(winSize);
-    for (let i = 0; i < winSize; i++) {
-      windowBytes[i] = pad[(s + i) % padLen];
+  while (winSize <= padLen && winSize <= 65536) {
+    let windowBytes;
+    if (isBlob) {
+      // Lazy-load only the segment needed from disk/SSD
+      const blobPart = pad.slice(s, (s + winSize) % padLen || padLen);
+      windowBytes = new Uint8Array(await blobPart.arrayBuffer());
+    } else {
+      windowBytes = new Uint8Array(winSize);
+      for (let i = 0; i < winSize; i++) windowBytes[i] = pad[(s + i) % padLen];
     }
 
     const entropyScore = await getChunkEntropy(windowBytes);
@@ -273,9 +279,14 @@ async function findPadChunk(pad, startIndex, targetEntropyBits, options = {}) {
     winSize += step;
   }
 
-  // fallback: fixed 1KB chunk
+  // Fallback Logic
   const fallbackSize = Math.min(padLen, 1024);
-  const fallback = new Uint8Array(fallbackSize);
-  for (let i = 0; i < fallbackSize; i++) fallback[i] = pad[(s + i) % padLen];
+  let fallback;
+  if (isBlob) {
+    fallback = new Uint8Array(await pad.slice(s, s + fallbackSize).arrayBuffer());
+  } else {
+    fallback = new Uint8Array(fallbackSize);
+    for (let i = 0; i < fallbackSize; i++) fallback[i] = pad[(s + i) % padLen];
+  }
   return { chunk: fallback, nextIndex: (s + fallbackSize) % padLen };
 }
