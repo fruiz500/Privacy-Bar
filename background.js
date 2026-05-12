@@ -123,7 +123,7 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   const { isPanelOpen } = await chrome.storage.session.get("isPanelOpen");
 
-  // 2. SILENT EXIT: Avoid trying to 'help' on restricted pages. [cite: 2026-03-30]
+  // 2. SILENT EXIT: Avoid trying to 'help' on restricted pages.
   if (isRestrictedUrl(tab.url)) return;
 
   if (changeInfo.status === 'complete' && isPanelOpen) {
@@ -134,14 +134,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 // Consolidate injection logic into one robust helper
 async function injectAgentToTab(tabId) {
   try {
-    // 1. Blind Injection attempt [cite: 2026-03-30]
-    // No URL or permissions check needed; the activeTab gesture handles it [cite: 2026-03-30]
+    // 1. Blind Injection attempt
+    // No URL or permissions check needed; the activeTab gesture handles it
     await chrome.scripting.executeScript({
       target: { tabId: tabId },
       files: ["agent-core.js"]
     });
 
-    // 2. Handshake [cite: 2026-03-30]
+    // 2. Handshake
     chrome.tabs.sendMessage(tabId, { type: "GET_CURRENT_STATE" });
     return { success: true };
 
@@ -176,19 +176,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 chrome.action.onClicked.addListener((tab) => {
   const tabId = tab.id;
-  const url = tab.url; // Capture the activeTab gift immediately [cite: 2026-03-30]
+  const url = tab.url; // Capture the activeTab gift immediately
 
-  // 1. Fire and forget the storage set (don't await it here) [cite: 2026-03-30]
+  // 1. Fire and forget the storage set (don't await it here)
   chrome.storage.session.set({ activeTabUrl: url, activeTabId: tabId });
 
-  // 2. Open the panel IMMEDIATELY to satisfy the 'User Gesture' rule [cite: 2026-03-30]
+  // 2. Open the panel IMMEDIATELY to satisfy the 'User Gesture' rule 
   chrome.sidePanel.setOptions({
     tabId,
     path: 'sidepanel.html',
     enabled: true
   }, () => {
     // Calling open inside the callback of a gesture-triggered function 
-    // is the most reliable way to avoid the "Uncaught Error" [cite: 2026-03-30]
+    // is the most reliable way to avoid the "Uncaught Error"
     chrome.sidePanel.open({ tabId }).catch(err => console.error("Gesture Error:", err));
   });
 });

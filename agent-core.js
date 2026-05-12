@@ -48,14 +48,14 @@ if (typeof window.PB_AGENT_LOADED === 'undefined') {
     // 3. Refined Crypto Detection
     const bodyText = document.body ? document.body.innerText : "";
 
-    // - Identity separator [cite: 2026-03-28]
+    // - Identity separator
     const hasIdentity = bodyText.includes("//////");
 
-    // - PassLok Classic pattern [cite: 2026-03-28]
+    // - PassLok Classic pattern
     const hasClassicPattern = /\b[0-9a-km-zL]{50,}\b/.test(bodyText);
 
     /**
-     * - Unbroken Base64 (Padding-Free) [cite: 2026-04-20]
+     * - Unbroken Base64 (Padding-Free)
      * We use \b (word boundaries) to ensure we aren't catching partial strings 
      * inside URLs. We increase the threshold to 128 chars to skip most 
      * standard web tokens and CSS fonts.
@@ -83,7 +83,7 @@ if (typeof window.PB_AGENT_LOADED === 'undefined') {
       if (observer) observer.disconnect();
     }
 
-    // Return for the sidepanel handshake [cite: 2026-04-20]
+    // Return for the sidepanel handshake
     return state;
   }
 
@@ -208,7 +208,11 @@ if (typeof window.PB_AGENT_LOADED === 'undefined') {
 
   // ---- Click-to-Load Logic ----
   document.addEventListener("click", (e) => {
-    if (e.target.tagName === "BUTTON" || e.target.tagName === "INPUT") return;
+    if (
+      e.target.tagName === "BUTTON" ||
+      e.target.tagName === "INPUT" ||
+      e.target.closest('[role="button"]')
+    ) return;
 
     // Alt+Click an image to load it into the stego preview
     if (e.altKey && e.target.tagName === "IMG") {
@@ -248,8 +252,10 @@ if (typeof window.PB_AGENT_LOADED === 'undefined') {
       return;
     }
 
-    const blob = getSelectedBlob();
-    if (blob) chrome.runtime.sendMessage({ type: "BLOB_CLICKED", blob });
+    if (!checkForLargeInputFields()) {
+      const blob = getSelectedBlob(e.target); // Pass the target for better context
+      if (blob) chrome.runtime.sendMessage({ type: "BLOB_CLICKED", blob });
+    }
   }, true);
 
   function getSelectedBlob() {
