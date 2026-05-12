@@ -36,16 +36,16 @@ function showStatusMsg(content, tone) {
   const colors = {
     good: '#16a34a',
     bad: '#ef4444',
-    info: 'var(--text-muted)', // Use theme-aware CSS variable [cite: 2026-04-25]
+    info: 'var(--text-muted)', // Use theme-aware CSS variable
     special: '#3b82f6'
   };
 
-  // 1. Nuclear Reset: Wipe style, classes, and timer [cite: 2026-03-30]
+  // 1. Nuclear Reset: Wipe style, classes, and timer
   if (statusTimeout) clearTimeout(statusTimeout);
   el.removeAttribute('style');
   el.className = '';
 
-  // 2. Apply New State [cite: 2026-03-30]
+  // 2. Apply New State
   el.style.color = colors[tone] || colors.info;
   el.innerHTML = content; // Changed to innerHTML for license formatting
 
@@ -54,12 +54,12 @@ function showStatusMsg(content, tone) {
     lockMasterPassword();
   }
 
-  // 4. Transient messages clear after 5s [cite: 2026-03-30]
+  // 4. Transient messages clear after 10s
   if ((tone === 'good' || tone === 'info') && content !== '') {
     statusTimeout = setTimeout(() => {
       el.innerHTML = '';
-      el.style.color = 'var(--text-main)'; // Match info fallback [cite: 2026-04-25]
-    }, 5000);
+      el.style.color = 'var(--text-main)'; // Match info fallback
+    }, 10000);
   }
 }
 
@@ -115,7 +115,7 @@ function getRegisteredDomain(hostname) {
  * Updates the Connect button and main message based on background script response.
  */
 function handleConnectionResponse(response) {
-  // PRUNED: Removed all logic related to the connect-btn element [cite: 2026-03-30]
+  // PRUNED: Removed all logic related to the connect-btn element
 
   if (response && response.success) {
     console.log("Privacy Bar: Connection established via ActiveTab.");
@@ -139,7 +139,7 @@ function switchTab(tabName) {
   if (tabName === currentActiveTab) return;
   currentActiveTab = tabName;
 
-  // 1. Update the manual lock and persist it [cite: 2026-04-24]
+  // 1. Update the manual lock and persist it
   if (window.currentTabId) {
     activeTabsByTabId[window.currentTabId] = tabName;
     chrome.storage.session.set({ [`tabUI_${window.currentTabId}`]: tabName });
@@ -150,7 +150,7 @@ function switchTab(tabName) {
     btn.classList.toggle('active', btn.dataset.tab === tabName);
   });
 
-  // 3. UI Card Visibility [cite: 2026-03-28]
+  // 3. UI Card Visibility
   ['card-synth', 'card-crypto', 'card-note', 'dropTargetCard', 'stego-image-container', 'synth-extra-inputs', 'decrypt-email-display', 'directory-card']
     .forEach(id => document.getElementById(id)?.classList.add('hidden'));
 
@@ -177,7 +177,7 @@ function switchTab(tabName) {
  * Re-triggers injection if the browser tab reloads while the panel is open
  */
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  // Silent exit if it's a restricted system page [cite: 2026-03-30]
+  // Silent exit if it's a restricted system page
   if (isRestrictedUrl(tab.url)) return;
 
   if (changeInfo.status === 'complete') {
@@ -268,13 +268,13 @@ async function updateUI(state) {
     }
   });
 
-  // 1. Synchronous Context Acquisition [cite: 2026-03-30]
+  // 1. Synchronous Context Acquisition
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const currentTabId = tab?.id;
   const currentUrl = tab?.url || "";
   if (!currentTabId) return;
 
-  // Cache the ID globally so click listeners can use it synchronously [cite: 2026-04-20]
+  // Cache the ID globally so click listeners can use it synchronously
   window.currentTabId = currentTabId;
 
   // --- CONNECT SITE LOGIC ---
@@ -286,14 +286,14 @@ async function updateUI(state) {
     return;
   }
 
-  // 2. DATA SYNC [cite: 2026-03-28]
+  // 2. DATA SYNC
   if (s && s.host) {
     currentHost = getRegisteredDomain(s.host);
     window.currentHost = currentHost;
     loadHostData(currentHost);
   }
 
-  // 3. TAB DETERMINATION (Manual > File Mode > Auto) [cite: 2026-04-20]
+  // 3. TAB DETERMINATION (Manual > File Mode > Auto)
   let targetTab = null;
   const manualLock = activeTabsByTabId[currentTabId];
 
@@ -310,7 +310,7 @@ async function updateUI(state) {
     else targetTab = 'notes';
   }
 
-  // 4. EXECUTE [cite: 2026-03-28, 2026-04-20]
+  // 4. EXECUTE
   if (targetTab !== currentActiveTab) {
     switchTab(targetTab);
   }
@@ -359,7 +359,7 @@ function updateSynthUI(synthData) {
 function updateCryptUI(cryptData) {
   const emailField = document.getElementById("user-email");
   if (emailField) {
-    // Focus Guard: Do not overwrite the value if the user is currently typing [cite: 2026-03-28]
+    // Focus Guard: Do not overwrite the value if the user is currently typing
     if (document.activeElement !== emailField) {
       emailField.value = cryptData.email || "";
     }
@@ -515,7 +515,7 @@ window.updateLockList = function () {
   if (!lockList) return;
 
   // FOCUS GUARD: If the user is currently interacting with the list, don't rebuild it.
-  // This prevents the "constant update" bug on dynamic sites like Yahoo Mail [cite: 2026-03-28].
+  // This prevents the "constant update" bug on dynamic sites like Yahoo Mail.
   if (document.activeElement === lockList) return;
 
   const modeSelect = document.getElementById('mode-select');
@@ -1147,13 +1147,13 @@ function requestAgentStatus(tabId) {
   // 1. Try to talk to the agent that is already on the page
   chrome.tabs.sendMessage(tabId, { type: "GET_CURRENT_STATE" }, (response) => {
     if (chrome.runtime.lastError || !response) {
-      // 2. ONLY if the agent is missing do we ask the background to inject [cite: 2026-03-30]
+      // 2. ONLY if the agent is missing do we ask the background to inject
       chrome.runtime.sendMessage({
         action: "PANEL_ACTIVE",
         tabId: tabId
       }, handleConnectionResponse);
     } else {
-      // 3. Agent is alive! Update UI silently and skip the red error path [cite: 2026-03-30]
+      // 3. Agent is alive! Update UI silently and skip the red error path
       handleConnectionResponse({ success: true, state: response });
     }
   });
@@ -1199,12 +1199,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (data.activeTabId) {
     window.currentTabId = data.activeTabId;
 
-    // 1. BRIDGE THE GAP: Restore the manual lock before updateUI runs [cite: 2026-04-24]
+    // 1. BRIDGE THE GAP: Restore the manual lock before updateUI runs
     const key = `tabUI_${window.currentTabId}`;
     const uiData = await chrome.storage.session.get([key]);
 
     if (uiData[key]) {
-      // Populate the volatile object updateUI uses as a 'Manual Lock' [cite: 2026-04-24]
+      // Populate the volatile object updateUI uses as a 'Manual Lock'
       activeTabsByTabId[window.currentTabId] = uiData[key];
       console.log("[DEBUG] Manual lock restored from session:", uiData[key]);
     }
@@ -1229,12 +1229,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.locDir = window.locDir || {}; // Ensure it's at least an empty object
   }
 
-  // 2. Restore the tab AFTER setting window.currentTabId [cite: 2026-04-24]
+  // 2. Restore the tab AFTER setting window.currentTabId
   if (window.currentTabId) {
     const key = `tabUI_${window.currentTabId}`;
     const uiData = await chrome.storage.session.get([key]);
     if (uiData[key]) {
-      // Fill the volatile object so updateUI respects the lock [cite: 2026-04-24]
+      // Fill the volatile object so updateUI respects the lock
       activeTabsByTabId[window.currentTabId] = uiData[key];
       switchTab(uiData[key]);
     }
@@ -1636,20 +1636,20 @@ document.getElementById('clear-pad-key')?.addEventListener('click', () => {
 
 // Listen for close event
 window.addEventListener("closeDirectory", () => {
-  // Ensure directory card is hidden (redundant but safe) [cite: 2026-03-28]
+  // Ensure directory card is hidden (redundant but safe)
   const dirCard = document.getElementById('directory-card');
   if (dirCard) dirCard.classList.add('hidden');
 
-  // FIX: Access the global window property to avoid ReferenceError [cite: 2026-04-21]
+  // FIX: Access the global window property to avoid ReferenceError
   if (window.isManualForThisTab) {
     const cryptoCard = document.getElementById('card-crypto');
     if (cryptoCard) {
       cryptoCard.classList.remove('hidden');
-      // Re-run updateUI to ensure all elements are in the right state [cite: 2026-03-28]
+      // Re-run updateUI to ensure all elements are in the right state
       setTimeout(() => updateUI(lastState), 0);
     }
   } else {
-    // Normal state restoration [cite: 2026-03-28]
+    // Normal state restoration
     updateUI(lastState);
   }
 });
@@ -1686,7 +1686,7 @@ document.getElementById("user-email").addEventListener("change", (e) => {
 
 document.getElementById('copyCompose')?.addEventListener('click', async () => {
   const mainBox = document.getElementById('mainBox');
-  // Wrap the HTML in a small, monospaced style for a cleaner look in emails [cite: 2026-03-28]
+  // Wrap the HTML in a small, monospaced style for a cleaner look in emails
   const styledHtml = `<span style="font-size: 9pt; line-height: 1.2; font-family: monospace;">${mainBox.innerHTML}</span>`;
   const text = mainBox.innerText;
 

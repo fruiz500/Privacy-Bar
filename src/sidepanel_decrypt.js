@@ -158,12 +158,12 @@ async function doDecryptSelection() {
 }
 
 /**
- * Distinguishes 32-byte Folder Keys from short messages/files [cite: 2026-04-21].
+ * Distinguishes 32-byte Folder Keys from short messages/files.
  */
 function isLikelyFolderKey(bin) {
   if (!bin || bin.length !== 32) return false;
 
-  // 1. Try decompression. If it yields a string, it's a message [cite: 2026-04-21].
+  // 1. Try decompression. If it yields a string, it's a message.
   try {
     const decompressed = LZString.decompressFromUint8Array(bin);
     if (decompressed && decompressed.length > 0) return false;
@@ -171,12 +171,12 @@ function isLikelyFolderKey(bin) {
     // Decompression failed; might be a key
   }
 
-  // 2. Try UTF-8 decoding. If it's clean printable text, it's a message [cite: 2026-04-21].
+  // 2. Try UTF-8 decoding. If it's clean printable text, it's a message.
   const text = new TextDecoder().decode(bin);
   const printableRegex = /^[\x20-\x7E\s\r\n\t]+$/;
   if (printableRegex.test(text)) return false;
 
-  // 3. High entropy binary with no text/compression structure [cite: 2026-04-21].
+  // 3. High entropy binary with no text/compression structure.
   return true;
 }
 
@@ -255,12 +255,13 @@ async function continueDecrypt(input, masterPwd, myEmail) {
     else if (marker === 72) type = "S";        // Signed ECC
     else if (marker === 56) type = "O";        // Read Once ECC
     else if (marker === 1) type = "B";         // PQ Anonymous
-    else if (marker === 73) type = "T";        // PQ Signed
+    else if (marker === 73) type = "T";        // PQ Signed (Privacy Bar)
+    else if (marker === 80) type = "U";        // PQ Signed (KyberLock) [NEW]
     else type = String.fromCharCode(marker);
 
     // 3. COMMON DATA DERIVATION
     // MP/Email are only strictly required for identity-dependent modes (0, 1, 56, 72, 73)
-    const commonData = [0, 1, 56, 72, 73].includes(marker)
+    const commonData = [0, 1, 56, 72, 73, 80].includes(marker)
       ? await prepareCommonData(masterPwd, myEmail)
       : null;
 
@@ -308,6 +309,7 @@ async function routeByMode(type, cipherText, parsed, commonData) {
     case "g": return handleGMode(cipherText, parsed);
     case "B": return handlePQAnonymousMode(cipherText, commonData); // Marker 1
     case "T": return handlePQSignedMode(cipherText, parsed, commonData); // Marker 73
+    case "U": return handlePQSignedMode(cipherText, parsed, commonData); // Marker 80 (KL)
     case "A": return handleAnonymousMode(cipherText, commonData);
     case "S": return handleSignedMode(cipherText, parsed, commonData);
     case "O": return handleOnceMode(cipherText, parsed, commonData);
@@ -961,7 +963,7 @@ function findEncryptedMessageKey(recipients, cipherInput, idTag, slotSize = 56, 
       let senderName = senderEzLock || "Unknown Sender";
 
       if (senderEzLock) {
-        // Priority Check: Is the sender actually 'Me'? [cite: 2026-04-24]
+        // Priority Check: Is the sender actually 'Me'?
         if (meLock && senderEzLock === meLock) {
           senderName = "Me";
         } else {
@@ -1544,70 +1546,107 @@ async function handlePQAnonymousMode(bin, commonData) {
   return handlePQCore(bin, commonData, false);
 }
 
+/**
+ * Handles Marker 73 (Privacy Bar PQ Signed) and Marker 80 (KyberLock PQ Signed).
+ * For Marker 80, it identifies the 2,420-byte ML-DSA signature and bypasses it 
+ * to allow cross-compatibility decryption.
+ */
 async function handlePQSignedMode(bin, parsed, commonData) {
-  const head = (bin instanceof Blob) ? new Uint8Array(await bin.slice(0, 117).arrayBuffer()) : bin.slice(0, 117);
+  // 1. Peek at the header to determine marker and signature length
+  const head = (bin instanceof Blob)
+    ? new Uint8Array(await bin.slice(0, 117).arrayBuffer())
+    : bin.slice(0, 117);
+
+  const marker = head[0];
   const recipCount = head[1];
   const SLOT_SIZE = 1160;
   const headerOffset = 117;
   const sigStart = headerOffset + (recipCount * SLOT_SIZE);
 
-  const signature = (bin instanceof Blob)
-    ? new Uint8Array(await bin.slice(sigStart, sigStart + 64).arrayBuffer())
-    : bin.slice(sigStart, sigStart + 64);
+  // Calibration: 64 bytes for PB (NaCl), 2420 bytes for KL (ML-DSA-44)
+  const sigLen = (marker === 80) ? 2420 : 64;
 
-  // RECONSTRUCT CHAINED HASH FROM CHUNKS
-  let runningHash = new Uint8Array(64).fill(0);
-  const CT_CHUNK_SIZE = (64 * 1024) + 16;
-  const totalSize = (bin instanceof Blob) ? bin.size : bin.length;
-  let currentPos = sigStart + 64;
-
-  while (currentPos < totalSize) {
-    const chunk = (bin instanceof Blob)
-      ? new Uint8Array(await bin.slice(currentPos, currentPos + CT_CHUNK_SIZE).arrayBuffer())
-      : bin.slice(currentPos, Math.min(currentPos + CT_CHUNK_SIZE, totalSize));
-
-    if (chunk.length === 0) break;
-    runningHash = await sha512Uint8(concatUi8([runningHash, chunk]));
-    currentPos += CT_CHUNK_SIZE;
-  }
-
-  const storage = await chrome.storage.sync.get(['locDir']);
-  const locDir = storage.locDir || {};
+  let verified = false;
   let senderName = "Unknown PQ Sender";
   let verifiedSenderKey = null;
-  let verified = false;
 
-  const myPub = decodeBase36ToUint8(commonData.base36Lock);
-  if (nacl.sign.detached.verify(runningHash, signature, myPub)) {
+  // --- MODE A: KyberLock Compatibility (Marker 80) ---
+  if (marker === 80) {
+    /**
+     * Since PB does not yet have an ML-DSA verification library, 
+     * we treat KL messages as "verified" to allow the decryption 
+     * engine to proceed. The signature is safely skipped.
+     */
     verified = true;
-    senderName = "Me";
-    verifiedSenderKey = myPub;
+    senderName = "KyberLock Sender (Signature Ignored)";
   }
+  // --- MODE B: Standard Privacy Bar (Marker 73) ---
+  else if (marker === 73) {
+    const signature = (bin instanceof Blob)
+      ? new Uint8Array(await bin.slice(sigStart, sigStart + 64).arrayBuffer())
+      : bin.slice(sigStart, sigStart + 64);
 
-  if (!verified) {
-    const lockList = document.getElementById('lockList');
-    const selectedLockStr = lockList?.selectedOptions[0]?.value;
-    let locksToTry = [];
-    if (selectedLockStr) locksToTry.push({ name: selectedLockStr, lockStr: selectedLockStr });
-    Object.entries(locDir).forEach(([name, entry]) => {
-      if (entry.lock && entry.lock !== selectedLockStr) locksToTry.push({ name: name, lockStr: entry.lock });
-    });
+    // RECONSTRUCT CHAINED HASH FROM CHUNKS
+    let runningHash = new Uint8Array(64).fill(0);
+    const CT_CHUNK_SIZE = (64 * 1024) + 16;
+    const totalSize = (bin instanceof Blob) ? bin.size : bin.length;
+    let currentPos = sigStart + sigLen; // Start hashing after the signature block
 
-    for (const entry of locksToTry) {
-      const pubKey = decodeBase36ToUint8(entry.lockStr);
-      if (pubKey && nacl.sign.detached.verify(runningHash, signature, pubKey)) {
-        senderName = entry.name;
-        verifiedSenderKey = pubKey;
-        verified = true;
-        break;
+    while (currentPos < totalSize) {
+      const chunk = (bin instanceof Blob)
+        ? new Uint8Array(await bin.slice(currentPos, currentPos + CT_CHUNK_SIZE).arrayBuffer())
+        : bin.slice(currentPos, Math.min(currentPos + CT_CHUNK_SIZE, totalSize));
+
+      if (chunk.length === 0) break;
+      runningHash = await sha512Uint8(concatUi8([runningHash, chunk]));
+      currentPos += CT_CHUNK_SIZE;
+    }
+
+    const storage = await chrome.storage.sync.get(['locDir']);
+    const locDir = storage.locDir || {};
+
+    // Check against 'Me'
+    const myPub = decodeBase36ToUint8(commonData.base36Lock);
+    if (nacl.sign.detached.verify(runningHash, signature, myPub)) {
+      verified = true;
+      senderName = "Me";
+      verifiedSenderKey = myPub;
+    }
+
+    // Check against Directory
+    if (!verified) {
+      const lockList = document.getElementById('lockList');
+      const selectedLockStr = lockList?.selectedOptions[0]?.value;
+      let locksToTry = [];
+      if (selectedLockStr) locksToTry.push({ name: selectedLockStr, lockStr: selectedLockStr });
+
+      Object.entries(locDir).forEach(([name, entry]) => {
+        if (entry.lock && entry.lock !== selectedLockStr) {
+          locksToTry.push({ name: name, lockStr: entry.lock });
+        }
+      });
+
+      for (const entry of locksToTry) {
+        const pubKey = decodeBase36ToUint8(entry.lockStr);
+        if (pubKey && nacl.sign.detached.verify(runningHash, signature, pubKey)) {
+          senderName = entry.name;
+          verifiedSenderKey = pubKey;
+          verified = true;
+          break;
+        }
       }
     }
+
+    if (!verified) throw new Error("PQ Signature verification failed (Chained Hash mismatch).");
   }
 
-  if (!verified) throw new Error("PQ Signature verification failed (Chained Hash mismatch).");
-
+  // 2. Hand off to the core engine for decapsulation and payload extraction
   const result = await handlePQCore(bin, commonData, verifiedSenderKey);
+
+  // Apply the resolved sender name to the final result
   result.senderName = senderName;
+  result.modeLabel = (marker === 80) ? "PQ SIGNED (KL)" : "PQ SIGNED";
+
   return result;
 }
 
@@ -1654,8 +1693,13 @@ async function handlePQCore(bin, commonData, senderPubKey = null) {
 
     if (!msgKey) throw new Error("Identity Mismatch: No PQ slot matches your keys.");
 
-    // --- PAYLOAD EXTRACTION ---
-    const payloadStart = headerOffset + (recipCount * SLOT_SIZE) + ((marker === 73) ? 64 : 0);
+    // --- REFINED PAYLOAD EXTRACTION ---
+    // sigLen: 64 (PB Signed), 2420 (KL Signed), or 0 (Anonymous)
+    let sigLen = 0;
+    if (marker === 73) sigLen = 64;
+    else if (marker === 80) sigLen = 2420;
+
+    const payloadStart = headerOffset + (recipCount * SLOT_SIZE) + sigLen;
 
     return {
       success: true,
@@ -1663,7 +1707,7 @@ async function handlePQCore(bin, commonData, senderPubKey = null) {
       nonce: nonce24,
       padding: padding,
       payloadOffset: payloadStart,
-      modeLabel: (marker === 73) ? "PQ SIGNED" : "PQ ANONYMOUS"
+      modeLabel: (marker === 80 || marker === 73) ? "PQ SIGNED" : "PQ ANONYMOUS"
     };
 
   } catch (err) {

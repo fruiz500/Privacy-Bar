@@ -252,7 +252,7 @@ function symEncrypt(plainstr, nonce24, symKey, isCompressed) {
 
 //concatenates multiple Uint8Arrays into one. Input: array of Uint8Arrays. Output: single Uint8Array
 function concatUi8(arrays) {
-  // Filter out any undefined/null entries to prevent NaN length errors [cite: 2026-03-28]
+  // Filter out any undefined/null entries to prevent NaN length errors
   const validArrays = arrays.filter(a => a && (a instanceof Uint8Array || Array.isArray(a)));
   
   let totalLength = validArrays.reduce((acc, value) => acc + value.length, 0);

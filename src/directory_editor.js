@@ -15,7 +15,7 @@ var locDir = {}; // Using var to ensure it's truly global
 // 2. Helper to persist the directory
 async function syncLocDir(directoryToSave) {
   // If no directory is passed, use the current window.locDir as a fallback.
-  // If BOTH are missing, stop immediately to prevent a wipe [cite: 2026-04-21].
+  // If BOTH are missing, stop immediately to prevent a wipe.
   const dataToSave = directoryToSave || window.locDir;
 
   if (!dataToSave) {
@@ -76,7 +76,7 @@ async function resetReadOnce(recipient) {
   const reply = confirm('Do you really want to reset the current Read-Once exchange with ' + recipient + '? This cannot be undone.');
   if(!reply) return;
   
-  // 1. Update the in-memory global state first [cite: 2026-03-28]
+  // 1. Update the in-memory global state first
   if (window.locDir && window.locDir[recipient]) {
     delete window.locDir[recipient].ro;
     console.log(`Deleted 'ro' key for ${recipient} in memory.`);
@@ -85,7 +85,7 @@ async function resetReadOnce(recipient) {
     return; // Stop if there's nothing to reset
   }
 
-  // 2. Use our existing helper to persist and WAIT for completion [cite: 2026-04-21]
+  // 2. Use our existing helper to persist and WAIT for completion
   try {
     await syncLocDir(window.locDir);
     console.log("locDir successfully updated in sync storage.");
